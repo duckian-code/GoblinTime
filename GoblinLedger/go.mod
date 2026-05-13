@@ -3,6 +3,7 @@ module GoblinLedger
 go 1.25.5
 
 require (
+	golang.org/x/crypto v0.31.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
 )

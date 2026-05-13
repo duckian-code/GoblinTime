@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -17,6 +18,13 @@ type Goblin struct {
 	Password string `gorm:"type:varchar(60);not null"`
 	Email    string `gorm:"unique;not null"`
 	Clan     string
+}
+
+type RegisterRequest struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Clan     string `json:"clan"`
+	Password string `json:"password"`
 }
 
 type GrabbedGoblin struct {
@@ -64,12 +72,29 @@ func registerGoblin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newGoblin := Goblin{}
+	request := RegisterRequest{}
 
-	json.NewDecoder(r.Body).Decode(&newGoblin)
+	json.NewDecoder(r.Body).Decode(&request)
 
-	db.Create(&newGoblin)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(request.Password), 10)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
+	newGoblin := Goblin{
+		Username: request.Username,
+		Password: string(hashed),
+		Email:    request.Email,
+		Clan:     request.Clan,
+	}
+
+	outcome := db.Create(&newGoblin)
+	if outcome.Error != nil {
+		// Send the exact reason Postgres rejected it back to Postman
+		http.Error(w, "Database rejected insert: "+outcome.Error.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusCreated)
 	return
 
