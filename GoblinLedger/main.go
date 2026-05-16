@@ -91,10 +91,10 @@ func registerGoblin(w http.ResponseWriter, r *http.Request) {
 
 	outcome := db.Create(&newGoblin)
 	if outcome.Error != nil {
-		// Send the exact reason Postgres rejected it back to Postman
 		http.Error(w, "Database rejected insert: "+outcome.Error.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(http.StatusCreated)
 	return
 
