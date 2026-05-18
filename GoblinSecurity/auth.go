@@ -26,14 +26,14 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/users/login", LoginHandler)
+	mux.HandleFunc("/users/login", loginHandler)
 	mux.HandleFunc("/validate", validateHandler)
 
 	fmt.Println("Auth service listening on port 8088")
 	log.Fatal(http.ListenAndServe(":8088", mux))
 }
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
+func loginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusBadRequest)
 		return
