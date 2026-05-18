@@ -1,0 +1,11 @@
+.env
+*.env
+
+# IDE junk i dont want github to pick up
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
