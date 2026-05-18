@@ -3,13 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"goblinTime/data"
+	"goblinTime/data" // will change to user id
 	"log"
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type LoginRequest struct {
