@@ -139,3 +139,26 @@ func getGoblin(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(goblin)
 }
+
+func DoesGoblinExist(username string, password string) int {
+	if username || password == nil {
+		return -1
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(request.Password), 10)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var userId uint
+
+	err := db.Select("id").Where("username = ? AND password = ?", username, hashed).Scan(&userId).Error
+
+	if err != nil {
+		return -1
+	}
+
+	return userID
+
+}
