@@ -1,1 +1,4 @@
 docker run --name GoblinLedger --network GoblinNetwork -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=penguin -e POSTGRES_DB=GoblinTime -p 5432:5432 -v pgdata:/var/lib/postgresql/data -d postgres:15-alpine
+
+
+we need to decide who is gonna have the main function since both the user and auth are going to exist in the same container, ONLY one needs to be exposing us to a port
