@@ -8,10 +8,8 @@ import (
 	"net/http"
 	"os"
 	"time"
-<<<<<<< Updated upstream:GoblinSecurity/auth.go
-=======
+
 	"github.com/golang-jwt/jwt/v5"
->>>>>>> Stashed changes:GateKeeper/login.go
 )
 
 type LoginRequest struct {
