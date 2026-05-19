@@ -45,7 +45,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := data.VerifyUser(lr.Email, lr.Password)
+	userID := data.GetGoblin(lr.Username, lr.Password, lr.Email, lr.Clan) // edit: DoesGoblinExist
 	if userID == -1 {
 		http.Error(w, "Invalid Email or Password", http.StatusUnauthorized)
 		return
