@@ -1,0 +1,68 @@
+# livekit-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: livekit-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: livekit-server
+  template:
+    metadata:
+      labels:
+        app: livekit-server
+    spec:
+      containers:
+        - name: livekit-server
+          image: livekit/livekit-server:latest
+          ports:
+            - containerPort: 7880   # HTTP (health + API)
+            - containerPort: 7881   # HTTPS (if terminating TLS here)
+            - containerPort: 7882   # WebRTC over TCP (fallback)
+          env:
+            - name: LIVEKIT_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: livekit-config
+                  key: config.yaml
+            - name: LIVEKIT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: livekit-secrets
+                  key: api_key
+            - name: LIVEKIT_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: livekit-secrets
+                  key: api_secret
+            - name: LIVEKIT_KEYS
+              value: "$(LIVEKIT_API_KEY): $(LIVEKIT_API_SECRET)"
+            - name: LIVEKIT_TURN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: livekit-secrets
+                  key: turn_secret
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: livekit-server
+spec:
+  selector:
+    app: livekit-server
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 7880
+      targetPort: 7880
+    - name: rtc-tcp
+      port: 7882
+      targetPort: 7882

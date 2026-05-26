@@ -1,0 +1,22 @@
+# Tiltfile
+
+# --- Secrets ---
+# Tilt can't create secrets from commands directly, so we use a local script
+local_resource(
+  'create-secrets',
+  cmd='bash Infra/create-secrets.sh',
+  deps=[],
+  trigger_mode=TRIGGER_MODE_MANUAL,  # only runs when you manually trigger it
+)
+
+# --- ConfigMaps ---
+k8s_yaml('LiveKit/livekit-configmap.yaml')
+k8s_yaml('Turn/coturn-configmap.yaml')
+
+# --- Deployments ---
+k8s_yaml('LiveKit/livekit-deployment.yaml')
+k8s_yaml('Turn/coturn-deployment.yaml')
+
+# --- Resources ---
+k8s_resource('livekit-server', port_forwards='7880:7880')
+k8s_resource('coturn', port_forwards='3478:3478')
