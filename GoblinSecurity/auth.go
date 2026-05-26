@@ -8,11 +8,13 @@ import (
 	"net/http"
 	"os"
 	"time"
-<<<<<<< Updated upstream:GoblinSecurity/auth.go
-=======
-	"github.com/golang-jwt/jwt/v5"
->>>>>>> Stashed changes:GateKeeper/login.go
 )
+
+//<<<<<<< Updated upstream:GoblinSecurity/auth.go
+//=======
+//	"github.com/golang-jwt/jwt/v5"
+//>>>>>>> Stashed changes:GateKeeper/login.go
+//)
 
 type LoginRequest struct {
 	Username string `json:"username"`
@@ -33,8 +35,8 @@ func main() {
 	mux.HandleFunc("/users/login", loginHandler)
 	mux.HandleFunc("/validate", validateHandler)
 
-	fmt.Println("Auth service listening on port 8088")
-	log.Fatal(http.ListenAndServe(":8088", mux))
+	fmt.Println("Auth service listening on port 8089")
+	log.Fatal(http.ListenAndServe(":8089", mux))
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +51,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := data.GetGoblin(lr.Username, lr.Password, lr.Email, lr.Clan) // edit: DoesGoblinExist
+	userID := data.DoesGoblinExist(lr.Username, lr.Password) // edit: DoesGoblinExist
 	if userID == -1 {
 		http.Error(w, "Invalid Email or Password", http.StatusUnauthorized)
 		return
