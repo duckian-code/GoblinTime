@@ -1,3 +1,10 @@
 body {
-    font-family: sans-serif;
+    background: #1f1f21;
+    color: #f5f5f7;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input {
+    font: inherit;
 }

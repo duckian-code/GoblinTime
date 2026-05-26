@@ -1,16 +1,97 @@
+import {useState} from "react";
+
 function MediaPage() {
-    // TODO: IMPLEMENT ENDPOINT CONTACT AND RECOMMENDED
+    const livekit = require('livekit-client');
+    const room = new livekit.Room();
+
+
     const contacts = [
-        "Anonymous Goblin",
-        "Less Anonymous Goblin",
-        "Super Anonymous Goblin"
+        // "Anonymous Goblin",
+        // "Less Anonymous Goblin",
+        // "Super Anonymous Goblin"
     ];
 
+    const [error, setError] = useState(null);
+
+    const getCookie = (name) => {
+        const cookie = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith(`${name}=`));
+
+        return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
+    };
+
     const recommended = [
-        "Gilbert",
-        "Godfrey",
-        "Gillard"
+        // "Gilbert",
+        // "Godfrey",
+        // "Gillard"
     ];
+
+    const fetchContacts = async(event) => {
+        setError(null);
+        // TODO: contacts endpoint
+
+        const serviceUrl = process.env.USER_SERVICE_URL || "";
+        const endpoint = process.env.CONTACTS_ENDPOINT || ""
+        // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
+        const targetUrl = `${serviceUrl}/${endpoint}`;
+
+        try {
+            const response = await fetch(targetUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`User Service responded with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("User Service successful GET: ", data);
+
+            return data;
+
+        } catch (err) {
+            console.error("Auth Error: ", err);
+            setError(err.message || "An error occurred during authentication. Please try again.");
+        }
+    }
+
+    const fetchRecommended = async(event) => {
+        setError(null);
+
+        const serviceUrl = process.env.USER_SERVICE_URL || "";
+        const endpoint = process.env.RECOMMENDED_ENDPOINT || ""
+        // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
+        const targetUrl = `${serviceUrl}/${endpoint}`;
+
+        try {
+            const response = await fetch(targetUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`User Service Recommended responded with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("User Service successful GET: ", data);
+
+            return data;
+
+        } catch (err) {
+            console.error("Auth Error: ", err);
+            setError(err.message || "An error occurred during authentication. Please try again.");
+        }
+    }
+
+    void fetchContacts;
+    void fetchRecommended;
 
     return (
         <div className="media-layout">
@@ -18,6 +99,7 @@ function MediaPage() {
             <aside className="sidebar">
 
                 <section>
+                    {error && <p className="profile-error" style={{ color: "red"}}>{error}</p>}
                     <h3>Contacts</h3>
 
                     <ul>
