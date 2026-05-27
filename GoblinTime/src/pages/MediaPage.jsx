@@ -8,6 +8,7 @@ import { useWebSocket } from "../context/WebSocketContext.jsx";
 import { useEffect } from "react";
 import { LiveKitRoom, VideoConference } from "@livekit/components-react";
 import "@livekit/components-styles"; // Required for VideoConference UI
+import { buildUrl } from "../utils/urlHelper.js";
 
 function MediaPage() {
     const room = new Room();
@@ -92,8 +93,7 @@ function MediaPage() {
 
         const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
         const endpoint = window.__ENV__?.VITE_USER_ENDPOINT || ""
-        // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}/`;
+        const targetUrl = buildUrl(serviceUrl, endpoint);
 
         try {
             const response = await fetch(targetUrl, {
@@ -160,7 +160,7 @@ function MediaPage() {
     const handleAddFriendClick = async (userName) => {
         const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
         const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT; // Replace with your actual endpoint
-        const targetUrl = `${serviceUrl}/${endpoint}`;
+        const targetUrl = buildUrl(serviceUrl, endpoint);
         const token = getCookie("token");
 
         try {
@@ -204,8 +204,7 @@ function MediaPage() {
 
         const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
         const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT || ""
-        // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}/`;
+        const targetUrl = buildUrl(serviceUrl, endpoint);
         const token = getCookie("token");
 
         try {
@@ -242,8 +241,7 @@ function MediaPage() {
 
         const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
         const endpoint = window.__ENV__?.VITE_RECOMMENDED_ENDPOINT || ""
-        // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}/`;
+        const targetUrl = buildUrl(serviceUrl, endpoint);
         const token = getCookie("token");
 
         try {

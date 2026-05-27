@@ -1,6 +1,8 @@
 import { useState } from "react";
 import {useNavigate} from "react-router-dom";
 import { useWebSocket } from "../context/WebSocketContext.jsx";
+import logo from "../assets/logo.png";
+import { buildUrl } from "../utils/urlHelper.js";
 
 function AuthPage() {
     const { connectWs } = useWebSocket(); // Import the useWebSocket hook
@@ -55,7 +57,7 @@ function AuthPage() {
                 const userUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
                 const registerEndpoint = window.__ENV__?.VITE_REGISTER_ENDPOINT || "";
 
-                const targetUrl = `${userUrl}/${registerEndpoint}/`;
+                const targetUrl = buildUrl(userUrl, registerEndpoint);
                 const response = await fetch(targetUrl, {
                     method: "POST",
                     headers: {
@@ -77,7 +79,7 @@ function AuthPage() {
                 const serviceUrl = window.__ENV__?.VITE_AUTH_SERVICE_URL || "";
                 const loginEndpoint = window.__ENV__?.VITE_LOGIN_ENDPOINT || "";
 
-                const targetUrl = `${serviceUrl}/${loginEndpoint}/`;
+                const targetUrl = buildUrl(serviceUrl, loginEndpoint);
                 const response = await fetch(targetUrl, {
                     method: "POST",
                     headers: {
@@ -120,7 +122,7 @@ function AuthPage() {
 
                 <section className="auth-section">
                     <div id={"auth-header"}>
-                        <img src="src/assets/logo.png" alt="Goblin Logo" />
+                        <img src={logo} alt="Goblin Logo" />
                         <h2>{isSignUp ? "Sign Up" : "Login"}</h2>
                     </div>
 
