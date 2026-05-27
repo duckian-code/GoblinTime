@@ -1,27 +1,44 @@
 package main
 
 import (
+	"GoblinSecurity/data" // will change to user id
 	"encoding/json"
 	"fmt"
-	"goblinTime/data" // will change to user id
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
-)
 
-//<<<<<<< Updated upstream:GoblinSecurity/auth.go
-//=======
-//	"github.com/golang-jwt/jwt/v5"
-//>>>>>>> Stashed changes:GateKeeper/login.go
-//)
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
+)
 
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
+func loadAuthEnv() {
+	candidates := []string{"GoblinSecurity/.env"}
+
+	if cwd, err := os.Getwd(); err == nil && filepath.Base(cwd) == "GoblinSecurity" {
+		candidates = append([]string{".env"}, candidates...)
+	}
+
+	for _, file := range candidates {
+		if _, err := os.Stat(file); err == nil {
+			if err := godotenv.Load(file); err != nil {
+				log.Printf("failed to load %s: %v", file, err)
+			}
+			return
+		}
+	}
+}
+
 func main() {
+	loadAuthEnv()
+
 	if os.Getenv("JWT_SECRET") == "" {
 		log.Fatal("JWT_SECRET environment variable is required.")
 	}

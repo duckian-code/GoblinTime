@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goblin-security
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: goblin-security
+  template:
+    metadata:
+      labels:
+        app: goblin-security
+    spec:
+      containers:
+        - name: goblin-security
+          image: murrayme/goblin-security:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8089
+          envFrom:
+            - secretRef:
+                name: auth-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: goblin-security
+spec:
+  selector:
+    app: goblin-security
+  ports:
+    - protocol: TCP
+      port: 8089
+      targetPort: 8089
