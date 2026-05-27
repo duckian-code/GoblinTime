@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: goblintime-signaling-config
+  labels:
+    app: goblintime-signaling
+data:
+  PORT: "8080"
+  USER_SERVICE_URL: "http://user-service.default.svc.cluster.local:3000"
+  USER_ENDPOINT: "api/users/"

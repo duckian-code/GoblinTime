@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goblintime-signaling
+  labels:
+    app: goblintime-signaling
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: goblintime-signaling
+  template:
+    metadata:
+      labels:
+        app: goblintime-signaling
+    spec:
+      containers:
+        - name: signaling-server
+          image: goblintime-signaling:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8083
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: goblintime-signaling-config
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            tcpSocket:
+              port: 8083
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            tcpSocket:
+              port: 8083
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: goblintime-signaling
+  labels:
+    app: goblintime-signaling
+spec:
+  type: ClusterIP
+  selector:
+    app: goblintime-signaling
+  ports:
+    - name: ws
+      port: 8083
+      targetPort: 8083
+      protocol: TCP

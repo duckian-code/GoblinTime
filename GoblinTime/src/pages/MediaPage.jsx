@@ -159,7 +159,7 @@ function MediaPage() {
 
     const handleAddFriendClick = async (userName) => {
         const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
-        const endpoint = window.__ENV__?.VITE_FRIEND_ENDPOINT; // Replace with your actual endpoint
+        const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT; // Replace with your actual endpoint
         const targetUrl = `${serviceUrl}/${endpoint}`;
         const token = getCookie("token");
 

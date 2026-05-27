@@ -145,7 +145,7 @@ function ProfilePage() {
     const addFriend = async(event) => {
         event.preventDefault();
         const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
-        const endpoint = window.__ENV__?.VITE_FRIEND_ENDPOINT || ""
+        const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT || ""
         const targetUrl = `${serviceUrl}/${endpoint}/`;
 
         const payload = {

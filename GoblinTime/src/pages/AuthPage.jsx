@@ -42,10 +42,6 @@ function AuthPage() {
         }
 
         // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const serviceUrl = window.__ENV__?.VITE_AUTH_SERVICE_URL || "";
-        const registerEndpoint = window.__ENV__?.VITE_REGISTER_ENDPOINT || ""
-        const loginEndpoint = window.__ENV__?.VITE_LOGIN_ENDPOINT || ""
-
         const payload = {
             username,
             password,
@@ -55,8 +51,11 @@ function AuthPage() {
         const token = getCookie("token");
 
         try {
-            if(isSignUp) { // SIGN UP - POST
-                const targetUrl = `${serviceUrl}/${registerEndpoint}/`;
+            if(isSignUp) { // SIGN UP - POST TO USER SERVICE
+                const userUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
+                const registerEndpoint = window.__ENV__?.VITE_REGISTER_ENDPOINT || "";
+
+                const targetUrl = `${userUrl}/${registerEndpoint}/`;
                 const response = await fetch(targetUrl, {
                     method: "POST",
                     headers: {
@@ -75,6 +74,9 @@ function AuthPage() {
 
                 navigate(0);
             } else {
+                const serviceUrl = window.__ENV__?.VITE_AUTH_SERVICE_URL || "";
+                const loginEndpoint = window.__ENV__?.VITE_LOGIN_ENDPOINT || "";
+
                 const targetUrl = `${serviceUrl}/${loginEndpoint}/`;
                 const response = await fetch(targetUrl, {
                     method: "POST",
