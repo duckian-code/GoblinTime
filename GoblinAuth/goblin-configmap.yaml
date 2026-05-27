@@ -3,6 +3,7 @@ kind: ConfigMap
 metadata:
   name: goblin-config
 data:
-  VITE_AUTH_SERVICE_URL: "http://localhost:8089"
+  VITE_AUTH_SERVICE_URL: "http://goblin-security:8089"
   VITE_LOGIN_ENDPOINT: "/users/login"
-  VITE_REGISTER_ENDPOINT: "http://localhost:8088/newgoblin/register"
+  VITE_REGISTER_ENDPOINT: "http://userservice:8088/newgoblin/register"
+
