@@ -4,7 +4,7 @@
   "description": "Front end component for GoblinTime",
   "license": "ISC",
   "author": "Lily McClellan",
-  "type": "commonjs",
+  "type": "module",
   "main": "index.ts",
   "scripts": {
     "dev": "vite",

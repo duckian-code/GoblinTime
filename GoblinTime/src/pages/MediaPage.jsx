@@ -1,15 +1,28 @@
 import {useState} from "react";
+import { Room } from "livekit-client";
+import { useCallContext } from "../context/CallContext.jsx";
 
 function MediaPage() {
-    const livekit = require('livekit-client');
-    const room = new livekit.Room();
+    const room = new Room();
 
+    const [currentRoom, setCurrentRoom] = useState(null);
+    const [connected, setConnected] = useState(false);
+    const [participants, setParticipants] = useState([]);
+    const [localTracks, setLocalTracks] = useState([]);
 
     const contacts = [
         // "Anonymous Goblin",
         // "Less Anonymous Goblin",
         // "Super Anonymous Goblin"
     ];
+
+    // CALL GLOBAL STATE
+    const { setIsReceivingCall, setCaller } = useCallContext();
+
+    const simulateIncomingCall = (name) => {
+        setCaller(name);
+        setIsReceivingCall(true);
+    };
 
     const [error, setError] = useState(null);
 
@@ -31,16 +44,18 @@ function MediaPage() {
         setError(null);
         // TODO: contacts endpoint
 
-        const serviceUrl = process.env.USER_SERVICE_URL || "";
-        const endpoint = process.env.CONTACTS_ENDPOINT || ""
+        const serviceUrl = import.meta.env.VITE_USER_SERVICE_URL || "";
+        const endpoint = import.meta.env.VITE_CONTACTS_ENDPOINT || ""
         // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}`;
+        const targetUrl = `${serviceUrl}/${endpoint}/`;
+        const token = getCookie("token");
 
         try {
             const response = await fetch(targetUrl, {
                 method: "GET",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
             });
 
@@ -59,19 +74,26 @@ function MediaPage() {
         }
     }
 
+    const createRoom = async(event) => {
+        setError(null);
+        const serviceUrl = import.meta.env.VITE_LIVEKIT_SERVICE_URL || "";
+    }
+
     const fetchRecommended = async(event) => {
         setError(null);
 
-        const serviceUrl = process.env.USER_SERVICE_URL || "";
-        const endpoint = process.env.RECOMMENDED_ENDPOINT || ""
+        const serviceUrl = import.meta.env.VITE_USER_SERVICE_URL || "";
+        const endpoint = import.meta.env.VITE_RECOMMENDED_ENDPOINT || ""
         // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}`;
+        const targetUrl = `${serviceUrl}/${endpoint}/`;
+        const token = getCookie("token");
 
         try {
             const response = await fetch(targetUrl, {
                 method: "GET",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
             });
 
@@ -97,7 +119,7 @@ function MediaPage() {
         <div className="media-layout">
 
             <aside className="sidebar">
-
+                <button onClick={() => simulateIncomingCall("John Goblin")}>Demo Incoming Call</button>
                 <section>
                     {error && <p className="profile-error" style={{ color: "red"}}>{error}</p>}
                     <h3>Contacts</h3>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import {useNavigate} from "react-router-dom";
 
 function AuthPage() {
     const [isSignUp, setIsSignUp] = useState(false);
@@ -11,6 +12,8 @@ function AuthPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    const navigate = useNavigate();
+
     const toggleAuthMode = () => {
         setIsSignUp((currentMode) => !currentMode);
         setError(null);
@@ -21,8 +24,8 @@ function AuthPage() {
         setIsLoading(true); // deprecated
         setError(null);
 
-        const serviceUrl = process.env.USER_SERVICE_URL || "";
-        const endpoint = process.env.USER_ENDPOINT || ""
+        const serviceUrl = import.meta.env.VITE_AUTH_SERVICE_URL || "";
+        const endpoint = import.meta.env.VITE_AUTH_ENDPOINT || ""
         const getCookie = (name) => {
             const cookie = document.cookie
                 .split("; ")
@@ -38,7 +41,7 @@ function AuthPage() {
         }
 
         // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}`;
+        const targetUrl = `${serviceUrl}/${endpoint}/`;
 
         const payload = {
             username,
@@ -46,11 +49,14 @@ function AuthPage() {
             ...(isSignUp && { email }) // only include email if signing up
         };
 
+        const token = getCookie("token");
+
         try {
             const response = await fetch(targetUrl, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(payload),
             });
@@ -60,13 +66,17 @@ function AuthPage() {
             }
 
             const data = await response.json();
+            console.log("User Service successful POST: ", data);
 
             if (!isSignUp) {
                 // TODO: VALIDATE ON ALL PAGES IF TOKEN IS RIGHT
                 storeLoginSession(data);
+                navigate("/profile");
+            } else {
+                navigate(0);
             }
 
-            console.log("User Service successful POST: ", data);
+
         } catch (err) {
             console.error("Auth Error: ", err);
             setError(err.message || "An error occurred during authentication. Please try again.");
@@ -86,8 +96,7 @@ function AuthPage() {
             throw new Error("Invalid expiration date from response.");
         }
 
-        setCookie("session_token", session_token, expiresAt);
-        setCookie("session_expires_at", expires_at, expiresAt);
+        setCookie("token", session_token, expiresAt);
 
         // TODO: CHECK ON ALL PAGES (ON HEADER? IF SESSIONS EXPIRED, IF YES CLEAR COOKIE AND REDIRECT HERE
     };

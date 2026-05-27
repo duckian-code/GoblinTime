@@ -8,8 +8,27 @@ import ProfilePage from "./pages/ProfilePage";
 import MediaPage from "./pages/MediaPage";
 
 import "./components/Layout.css";
+import IncomingCall from "./components/IncomingCall";
+import { useCallContext } from "./context/CallContext";
 
 function App() {
+    const { isReceivingCall, setIsReceivingCall, caller } = useCallContext();
+
+    // WHEN ACCEPT BUTTON IS CLICKED
+    const handleCallAccept = (callerName) => {
+        console.log("Call Accepted!");
+        // TODO: CALL ACCEPTED/SIGNALING LOGIC HERE
+
+        setIsReceivingCall(false);
+    }
+
+    const handleCallDeny = () => {
+        console.log("Call Denied!");
+        // TODO: CALL DENIED/SIGNALING LOGIC HERE
+
+        setIsReceivingCall(false);
+    }
+
     return (
         <Router>
             <div className="app-container">
@@ -24,6 +43,13 @@ function App() {
                 </main>
 
                 <Footer />
+
+                <IncomingCall
+                    isOpen={isReceivingCall}
+                    callerName={caller}
+                    onAccept={handleCallAccept}
+                    onDeny={handleCallDeny}
+                />
             </div>
         </Router>
     );

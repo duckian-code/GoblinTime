@@ -24,6 +24,8 @@ body,
 body {
     background: var(--background);
     color: var(--text);
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 img {
@@ -36,6 +38,7 @@ a {
     color: var(--text);
     text-decoration: none;
 }
+
 
 a:hover {
     color: var(--facetime-green);
@@ -53,6 +56,7 @@ a:hover {
 .main-content {
     flex: 1;
     padding: 16px;
+    min-width: 0;
 }
 
 .header,
@@ -133,6 +137,21 @@ a:hover {
     gap: 12px;
 }
 
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 200px;
+    padding-top: 15px;
+}
+
+.add-friend-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 300px;
+}
+
 .auth-form input,
 .auth-form button {
     padding: 10px;
@@ -193,6 +212,16 @@ button:hover {
     color: var(--muted-text);
 }
 
+.add-friend-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
 .profile-info strong {
     color: var(--text);
 }
@@ -228,6 +257,8 @@ button:hover {
 .media-content {
     flex: 1;
     padding: 16px;
+    min-width: 0;
+    max-width: 1080px;
 }
 
 .media-box {

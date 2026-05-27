@@ -6,6 +6,8 @@ function ProfilePage() {
         email: ""
     });
     const [error, setError] = useState(null);
+    const [clan, setClan] = useState("");
+    const [friend, setFriend] = useState("");
 
     const contacts = [
     //     "GoblinKing42",
@@ -23,6 +25,9 @@ function ProfilePage() {
         return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
     };
 
+    const serviceUrl = import.meta.env.VITE_USER_SERVICE_URL || "";
+    const endpoint = import.meta.env.VITE_CONTACTS_ENDPOINT || ""
+
     const setCookie = (key, value) => {
         document.cookie = `${key}=${value}; path=/; max-age=3600`;
         console.log("Cookie set:", key, value);
@@ -33,10 +38,9 @@ function ProfilePage() {
         setError(null);
         // TODO: contacts endpoint
 
-        const serviceUrl = process.env.USER_SERVICE_URL || "";
-        const endpoint = process.env.CONTACTS_ENDPOINT || ""
+
         // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}`;
+        const targetUrl = `${serviceUrl}/${endpoint}/`;
 
         try {
             const response = await fetch(targetUrl, {
@@ -53,8 +57,8 @@ function ProfilePage() {
             const data = await response.json();
             console.log("User Service successful GET: ", data);
 
+            setError(null);
             return data;
-
         } catch (err) {
             console.error("Auth Error: ", err);
             setError(err.message || "An error occurred during authentication. Please try again.");
@@ -64,17 +68,17 @@ function ProfilePage() {
     const profile = async() => {
         setError(null);
 
-        const userId = getCookie("UUID");
+        const userId = getCookie("token");
 
         if (!userId) {
-            setError("Unable to load profile: UUID cookie was not found.");
+            setError("Unable to load profile: JWT cookie was not found.");
             return;
         }
 
-        const serviceUrl = process.env.USER_SERVICE_URL || "";
-        const endpoint = process.env.USER_ENDPOINT || ""
+        const serviceUrl = import.meta.env.VITE_USER_SERVICE_URL || "";
+        const endpoint = import.meta.env.VITE_USER_ENDPOINT || ""
         // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}/${userId}`;
+        const targetUrl = `${serviceUrl}/${endpoint}/${userId}/`;
 
         try {
             const response = await fetch(targetUrl, {
@@ -91,19 +95,94 @@ function ProfilePage() {
             const data = await response.json();
             setProfileData({
                 username: data.username || "",
-                email: data.email || ""
+                email: data.email || "",
+                clan: data.clan || ""
             });
+            setError(null);
         } catch (err) {
             console.error("Profile Error: ", err);
             setError(err.message || "An error occurred while loading the profile. Please try again.");
         }
     }
 
+    const handleSubmit = async(event) => {
+        const serviceUrl = import.meta.env.VITE_USER_SERVICE_URL || "";
+        const endpoint = import.meta.env.VITE_USER_ENDPOINT || ""
+        // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
+        const targetUrl = `${serviceUrl}/${endpoint}/`;
+
+        const payload = {
+            clan
+        };
+
+        const token = getCookie("token");
+
+        try {
+            const response = await fetch(targetUrl, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                throw new Error(`User Service responded with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("User Service successful PATCH: ", data);
+            setError(null);
+        } catch (err) {
+            console.error("Auth Error: ", err);
+            setError(err.message || "An error occurred PATCHing goblin. Please try again.");
+        }
+    }
+
+    const addFriend = async(event) => {
+        event.preventDefault();
+        const serviceUrl = import.meta.env.VITE_USER_SERVICE_URL || "";
+        const endpoint = import.meta.env.VITE_FRIEND_ENDPOINT || ""
+        const targetUrl = `${serviceUrl}/${endpoint}/`;
+
+        const payload = {
+            friend // friend ID
+        }
+
+        const token = getCookie("token");
+
+        try {
+            const response = await fetch(targetUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                throw new Error(`User Service responded with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("User Service successful POST: ", data);
+            setFriend("");
+            setError(null);
+        } catch (err) {
+            console.error("Auth Error: ", err);
+            setError(err.message || "An error occurred adding goblin friend. Please try again.");
+        }
+    }
+
+    // ADD TOKEN AS HEADER BEFORE SENDING TO ENDPOINT
     useEffect(() => {
         profile();
     }, []);
 
     void fetchContacts;
+    void handleSubmit;
 
     return (
         <div className="page profile-page">
@@ -118,8 +197,22 @@ function ProfilePage() {
                 </p>
 
                 <p>
-                    <strong>Email:</strong> {profileData.email}
+                    <strong>Clan:</strong> {profileData.clan}
                 </p>
+
+                <form className="profile-form" onSubmit={handleSubmit}>
+                    <input type="text" placeholder="Change Clan Name" onChange={(e) => setClan(e.target.value)} required />
+                    <button type="submit">Enlist</button>
+                </form>
+            </section>
+
+            <section className="add-friend-section">
+                <h2>Add Friend</h2>
+
+                <form className="add-friend-form" onSubmit={addFriend}>
+                    <input type="text" placeholder="Friend's Username" value={friend} onChange={(e) => setFriend(e.target.value)} required />
+                    <button type="submit">Add</button>
+                </form>
             </section>
 
             <section className="contacts-section">
