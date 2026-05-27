@@ -65,19 +65,24 @@ spec:
               memory: 128Mi
 
 ---
+# … keep the original Service and Deployment definitions,
+# replace only the ConfigMap section:
+
 apiVersion: v1
-kind: Service
+kind: ConfigMap
 metadata:
-  name: goblintime-frontend
+  name: goblintime-frontend-config
   namespace: default
-  labels:
-    app: goblintime-frontend
-spec:
-  type: ClusterIP
-  selector:
-    app: goblintime-frontend
-  ports:
-    - name: http
-      port: 80
-      targetPort: 80
-      protocol: TCP
+data:
+  # These can be overridden per environment via kubectl or Kustomize
+  VITE_WS_URL:                "wss://goblintime-api.example.com"
+  VITE_USER_SERVICE_URL:      "https://goblintime-user.example.com"
+  VITE_AUTH_SERVICE_URL:      "https://goblintime-auth.example.com"
+  VITE_LIVEKIT_SERVICE_URL:   "https://goblintime-livekit.example.com"
+  VITE_VERIFY_ENDPOINT:       "verify"
+  VITE_REGISTER_ENDPOINT:     "register"
+  VITE_LOGIN_ENDPOINT:        "login"
+  VITE_CONTACTS_ENDPOINT:     "contacts"
+  VITE_USER_ENDPOINT:         "users"
+  VITE_FRIEND_ENDPOINT:       "friends"
+  VITE_RECOMMENDED_ENDPOINT:  "recommended"
