@@ -89,7 +89,7 @@ function handleSignalingMessage(senderId: string, msg: any) {
     switch (type) {
         case 'CALL_INVITE': {
             const { roomName, callerId, callerName, calleeId } = payload;
-
+            // TODO: IS REMOVING CALLEEID GOOD?
             sessions.set(roomName, {
                 roomName,
                 callerId,

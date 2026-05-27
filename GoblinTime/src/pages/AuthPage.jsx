@@ -1,7 +1,9 @@
 import { useState } from "react";
 import {useNavigate} from "react-router-dom";
+import { useWebSocket } from "../context/WebSocketContext.jsx";
 
 function AuthPage() {
+    const { connectWs } = useWebSocket(); // Import the useWebSocket hook
     const [isSignUp, setIsSignUp] = useState(false);
 
     const [email, setEmail] = useState("");
@@ -24,8 +26,7 @@ function AuthPage() {
         setIsLoading(true); // deprecated
         setError(null);
 
-        const serviceUrl = import.meta.env.VITE_AUTH_SERVICE_URL || "";
-        const endpoint = import.meta.env.VITE_AUTH_ENDPOINT || ""
+
         const getCookie = (name) => {
             const cookie = document.cookie
                 .split("; ")
@@ -41,7 +42,9 @@ function AuthPage() {
         }
 
         // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}/`;
+        const serviceUrl = window.__ENV__?.VITE_AUTH_SERVICE_URL || "";
+        const registerEndpoint = window.__ENV__?.VITE_REGISTER_ENDPOINT || ""
+        const loginEndpoint = window.__ENV__?.VITE_LOGIN_ENDPOINT || ""
 
         const payload = {
             username,
@@ -52,31 +55,47 @@ function AuthPage() {
         const token = getCookie("token");
 
         try {
-            const response = await fetch(targetUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify(payload),
-            });
+            if(isSignUp) { // SIGN UP - POST
+                const targetUrl = `${serviceUrl}/${registerEndpoint}/`;
+                const response = await fetch(targetUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload),
+                });
 
-            if (!response.ok) {
-                throw new Error(`User Service responded swith status: ${response.status}`);
-            }
+                if (!response.ok) {
+                    throw new Error(`User Service responded swith status: ${response.status}`);
+                }
 
-            const data = await response.json();
-            console.log("User Service successful POST: ", data);
+                const data = await response.json();
+                console.log("User Service successful POST: ", data);
 
-            if (!isSignUp) {
-                // TODO: VALIDATE ON ALL PAGES IF TOKEN IS RIGHT
-                storeLoginSession(data);
-                navigate("/profile");
-            } else {
                 navigate(0);
+            } else {
+                const targetUrl = `${serviceUrl}/${loginEndpoint}/`;
+                const response = await fetch(targetUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`User Service responded swith status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log("User Service successful POST: ", data);
+
+                setCookie("token", data.token);
+
+                navigate("/profile");
             }
-
-
         } catch (err) {
             console.error("Auth Error: ", err);
             setError(err.message || "An error occurred during authentication. Please try again.");
@@ -85,30 +104,13 @@ function AuthPage() {
         }
     }
 
-    const storeLoginSession = ({ session_token, expires_at }) => {
-        if (!session_token || !expires_at) {
-            throw new Error("Session token or expiration missing from response.");
-        }
+    const getCookie = (name) => {
+        const cookie = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith(`${name}=`));
 
-        const expiresAt = new Date(expires_at);
-
-        if (Number.isNaN(expiresAt.getTime())) {
-            throw new Error("Invalid expiration date from response.");
-        }
-
-        setCookie("token", session_token, expiresAt);
-
-        // TODO: CHECK ON ALL PAGES (ON HEADER? IF SESSIONS EXPIRED, IF YES CLEAR COOKIE AND REDIRECT HERE
+        return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
     };
-
-    const setCookie = (key, value, expiresAt) => {
-        document.cookie = [
-            `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
-            "path=/",
-            `expires=${expiresAt.toUTCString()}`,
-            "SameSite=Lax",
-        ].join("; ");
-    }
 
     return (
         <div className="page auth-page">

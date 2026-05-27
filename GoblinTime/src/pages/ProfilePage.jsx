@@ -25,8 +25,8 @@ function ProfilePage() {
         return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
     };
 
-    const serviceUrl = import.meta.env.VITE_USER_SERVICE_URL || "";
-    const endpoint = import.meta.env.VITE_CONTACTS_ENDPOINT || ""
+    const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
+    const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT || ""
 
     const setCookie = (key, value) => {
         document.cookie = `${key}=${value}; path=/; max-age=3600`;
@@ -41,12 +41,13 @@ function ProfilePage() {
 
         // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
         const targetUrl = `${serviceUrl}/${endpoint}/`;
-
+        const token = getCookie("token");
         try {
             const response = await fetch(targetUrl, {
                 method: "GET",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
             });
 
@@ -68,23 +69,24 @@ function ProfilePage() {
     const profile = async() => {
         setError(null);
 
-        const userId = getCookie("token");
+        const token = getCookie("token");
 
-        if (!userId) {
+        if (!token) {
             setError("Unable to load profile: JWT cookie was not found.");
             return;
         }
 
-        const serviceUrl = import.meta.env.VITE_USER_SERVICE_URL || "";
-        const endpoint = import.meta.env.VITE_USER_ENDPOINT || ""
+        const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
+        const endpoint = window.__ENV__?.VITE_USER_ENDPOINT || ""
         // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}/${userId}/`;
+        const targetUrl = `${serviceUrl}/${endpoint}/`;
 
         try {
             const response = await fetch(targetUrl, {
                 method: "GET",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
             });
 
@@ -106,8 +108,8 @@ function ProfilePage() {
     }
 
     const handleSubmit = async(event) => {
-        const serviceUrl = import.meta.env.VITE_USER_SERVICE_URL || "";
-        const endpoint = import.meta.env.VITE_USER_ENDPOINT || ""
+        const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
+        const endpoint = window.__ENV__?.VITE_USER_ENDPOINT || ""
         // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
         const targetUrl = `${serviceUrl}/${endpoint}/`;
 
@@ -142,8 +144,8 @@ function ProfilePage() {
 
     const addFriend = async(event) => {
         event.preventDefault();
-        const serviceUrl = import.meta.env.VITE_USER_SERVICE_URL || "";
-        const endpoint = import.meta.env.VITE_FRIEND_ENDPOINT || ""
+        const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
+        const endpoint = window.__ENV__?.VITE_FRIEND_ENDPOINT || ""
         const targetUrl = `${serviceUrl}/${endpoint}/`;
 
         const payload = {
