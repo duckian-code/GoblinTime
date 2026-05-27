@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci
 
 COPY . .
 
@@ -17,6 +17,13 @@ FROM nginx:stable-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Inject runtime environment variables
+COPY entrypoint.sh /docker-entrypoint.d/40-env-config.sh
+RUN chmod +x /docker-entrypoint.d/40-env-config.sh
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
 
 EXPOSE 80
 

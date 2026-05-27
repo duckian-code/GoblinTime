@@ -25,7 +25,7 @@ const ProtectedRoute = ({ children }) => {
             try {
                 // TODO: make sure this verifies as expected
                 const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
-                const endpoint = window.__ENV__?.VITE_VERIFY_ENDPOINT || ""
+                const endpoint = window.__ENV__?.VITE_USER_ENDPOINT || ""
                 const targetUrl = `${serviceUrl}/${endpoint}/`;
 
                 const response = await fetch(targetUrl, {
