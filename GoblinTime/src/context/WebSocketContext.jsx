@@ -75,30 +75,27 @@ export const WebSocketProvider = ({ children }) => {
 
     const acceptCall = () => {
         if(incomingCall) {
-            sendSignalingMessage("CALL_ACCEPTED", { roomName: incomingCall.roomName.roomName });
+            sendSignalingMessage("CALL_ACCEPTED", { roomName: incomingCall.roomName });
             setCallState("accepted");
         }
     }
 
     const rejectCall = () => {
         if(incomingCall) {
-            sendSignalingMessage("CALL_REJECTED", { roomName: incomingCall.roomName.roomName });
+            sendSignalingMessage("CALL_REJECTED", { roomName: incomingCall.roomName });
             setCallState("idle");
+            setIncomingCall(null);
         }
     }
 
     const cancelCall = (roomName) => {
-        if(incomingCall) {
-            sendSignalingMessage("CALL_CANCELLED", { roomName });
-            setCallState("idle");
-        }
+        sendSignalingMessage("CALL_CANCELLED", { roomName });
+        setCallState("idle");
     }
 
     const endCall = (roomName) => {
-        if(incomingCall) {
-            sendSignalingMessage("CALL_ENDED", { roomName });
-            setCallState("idle");
-        }
+        sendSignalingMessage("CALL_ENDED", { roomName });
+        setCallState("idle");
     };
 
     return (

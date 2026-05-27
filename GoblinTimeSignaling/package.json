@@ -4,7 +4,7 @@
   "description": "Signaling service for front-end GoblinTime",
   "license": "ISC",
   "author": "",
-  "type": "commonjs",
+  "type": "module",
   "main": "index.ts",
   "scripts": {
     "build": "tsc",

@@ -1,107 +1,110 @@
-import React, {createContext, useState, useEffect, useRef} from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { Room } from 'livekit-client';
 
-const WebSocketContext = createContext(null);
+const CallContext = createContext(null);
 
-export const useWebSocket = () => React.useContext(WebSocketContext);
+export const useCallContext = () => {
+    const context = useContext(CallContext);
+    if (!context) {
+        throw new Error('useCallContext must be used within a CallProvider');
+    }
+    return context;
+};
 
-export const WebSocketProvider = ({ children }) => {
-    const [incomingCall, setIncomingCall] = useState(null);
-    const [callState, setCallState] = useState("idle"); // idle, ringing, accepted
-    const wsRef = useRef(null);
+export const CallProvider = ({ children }) => {
+    // LiveKit state
+    const [lkToken, setLkToken] = useState(null);
+    const [lkUrl, setLkUrl] = useState(null);
+    const [lkRoom, setLkRoom] = useState(null);
+    const roomRef = useRef(null);
+    const roomNameRef = useRef('');
 
-    const getToken = () => {
+    // Call UI state
+    const [isCalling, setIsCalling] = useState(false);
+    const [callTarget, setCallTarget] = useState('');
+    const [caller, setCaller] = useState('');
+    const [isReceivingCall, setIsReceivingCall] = useState(false);
+
+    const getCookie = (name) => {
         const cookie = document.cookie
             .split("; ")
-            .find((row) => row.startsWith(`token=`));
-
+            .find((row) => row.startsWith(`${name}=`));
         return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
     };
 
-    const connectWs = () => {
-        const token = getToken();
-        if (!token || wsRef.current) return; {} // prevent duplicate or invalid
+    const joinLiveKitRoom = useCallback(async (roomName, username) => {
+        const serviceUrl = window.__ENV__?.VITE_LIVEKIT_SERVICE_URL || '';
+        const token = getCookie('token');
 
-        const wsUrl = window.__ENV__?.VITE_WS_URL || "";
-        const ws = new WebSocket(`${wsUrl}/ws/token=${token}`);
+        try {
+            const response = await fetch(`${serviceUrl}/token`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ roomName, username }),
+            });
 
-        ws.onopen = () => console.log("WebSocket connection established");
+            if (!response.ok) {
+                throw new Error(`Failed to get LiveKit token: ${response.status}`);
+            }
 
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            handleIncomingMessage(data);
-        };
+            const data = await response.json();
 
-        ws.onclose = () => {
-            console.log("WebSocket connection closed");
-            wsRef.current = null;
-        };
+            const room = new Room();
+            roomRef.current = room;
+            roomNameRef.current = roomName;
 
-        wsRef.current = ws;
-    };
-
-    const handleIncomingMessage = (data) => {
-        const { type, payload } = data;
-        switch (type) {
-            case "CALL_INVITE":
-                setIncomingCall(payload);
-                setCallState("ringing");
-                break;
-            case "CALL_ACCEPTED":
-                setCallState("accepted");
-                // TODO: TRIGGER JOIN LOGIC FOR LIVEKIT
-                break;
-            case "CALL_REJECTED":
-            case "CALL_CANCELLED":
-            case "CALL_ENDED":
-                setIncomingCall(null);
-                setCallState("idle");
-                break;
-            default:
-                console.log("Unknown message type:", type);
-                break;
+            setLkToken(data.token);
+            setLkUrl(data.url);
+            setLkRoom(room);
+        } catch (err) {
+            console.error('Failed to join LiveKit room:', err);
+            throw err;
         }
-    };
+    }, []);
 
-    const sendSignalingMessage = (type, payload) => {
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-            wsRef.current.send(JSON.stringify({ type, payload }));
+    const leaveLiveKitRoom = useCallback((endCallFn) => {
+        if (roomRef.current) {
+            roomRef.current.disconnect();
+            roomRef.current = null;
         }
-    };
+        setLkRoom(null);
+        setLkToken(null);
+        setLkUrl(null);
+        setIsCalling(false);
+        setCallTarget('');
+        setCaller('');
+        setIsReceivingCall(false);
 
-    const initiateCall = (calleeId, roomName, callerId, callerName) => {
-        sendSignalingMessage("CALL_INVITE", { calleeId, roomName, callerId, callerName });
-        setCallState("ringing");
-    }
-
-    const acceptCall = () => {
-        if(incomingCall) {
-            sendSignalingMessage("CALL_ACCEPTED", { roomName: incomingCall.roomName.roomName });
-            setCallState("accepted");
+        if (endCallFn && typeof endCallFn === 'function') {
+            endCallFn(roomNameRef.current);
         }
-    }
+        roomNameRef.current = '';
+    }, []);
 
-    const rejectCall = () => {
-        if(incomingCall) {
-            sendSignalingMessage("CALL_REJECTED", { roomName: incomingCall.roomName.roomName });
-            setCallState("idle");
-        }
-    }
-
-    const cancelCall = (roomName) => {
-        if(incomingCall) {
-            sendSignalingMessage("CALL_CANCELLED", { roomName });
-            setCallState("idle");
-        }
-    }
-
-    const endCall = (roomName) => {
-        if(incomingCall) {
-            sendSignalingMessage("CALL_ENDED", { roomName });
-            setCallState("idle");
-        }
+    const value = {
+        // LiveKit
+        lkToken,
+        lkUrl,
+        lkRoom,
+        joinLiveKitRoom,
+        leaveLiveKitRoom,
+        // Call UI
+        isCalling,
+        setIsCalling,
+        callTarget,
+        setCallTarget,
+        caller,
+        setCaller,
+        isReceivingCall,
+        setIsReceivingCall,
     };
 
     return (
-        <WebSocketContext.Provider value={{ connectWs, incomingCall, callState, initiateCall, acceptCall, rejectCall, cancelCall, endCall }}> {children} </WebSocketContext.Provider>
+        <CallContext.Provider value={value}>
+            {children}
+        </CallContext.Provider>
     );
 };
