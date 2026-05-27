@@ -10,6 +10,7 @@ import MediaPage from "./pages/MediaPage";
 import "./components/Layout.css";
 import IncomingCall from "./components/IncomingCall";
 import { useCallContext } from "./context/CallContext";
+import ProtectedRoute from "./context/AuthContext.jsx";
 
 function App() {
     const { isReceivingCall, setIsReceivingCall, caller } = useCallContext();
@@ -28,7 +29,7 @@ function App() {
 
         setIsReceivingCall(false);
     }
-
+    // TODO: ENABLE PROTECTED ENDPOINTS WHEN USER SERVICE CONFIRMED WORKS
     return (
         <Router>
             <div className="app-container">
@@ -37,7 +38,11 @@ function App() {
                 <main className="main-content">
                     <Routes>
                         <Route path="/" element={<AuthPage />} />
-                        <Route path="/profile" element={<ProfilePage />} />
+                        <Route path="/profile" element={
+                            <ProtectedRoute>
+                                <ProfilePage />
+                            </ProtectedRoute>
+                        } />
                         <Route path="/media" element={<MediaPage />} />
                     </Routes>
                 </main>
