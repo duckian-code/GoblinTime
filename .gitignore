@@ -9,3 +9,5 @@
 *.njsproj
 *.sln
 *.swp
+.gitignore
+GoblinAuth/auth-secret.yaml
