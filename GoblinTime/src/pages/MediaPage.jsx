@@ -56,7 +56,7 @@ function MediaPage() {
 
     const contacts = [
         {username: "Anonymous Goblin", uuid: "1234567890"},
-        // "Less Anonymous Goblin",
+        // "Less Anonymous Goblin",acks, setLocalTracks] = useState([]);
         // "Super Anonymous Goblin"
     ];
 
@@ -91,12 +91,10 @@ function MediaPage() {
             return;
         }
 
-        const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
         const endpoint = window.__ENV__?.VITE_USER_ENDPOINT || ""
-        const targetUrl = buildUrl(serviceUrl, endpoint);
 
         try {
-            const response = await fetch(targetUrl, {
+            const response = await fetch(endpoint, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -158,27 +156,24 @@ function MediaPage() {
     };
 
     const handleAddFriendClick = async (userName) => {
-        const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
         const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT; // Replace with your actual endpoint
-        const targetUrl = buildUrl(serviceUrl, endpoint);
         const token = getCookie("token");
 
         try {
             // --- POST REQUEST SPACE ---
-            /*
+
             const response = await fetch(targetUrl, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ friendUsername: userName }),
+                body: JSON.stringify({ friend_username: userName }),
             });
 
             if (!response.ok) {
                 throw new Error("Failed to add friend");
             }
-            */
 
             // Simulate successful POST request
             console.log(`Successfully sent friend request to ${userName}`);
@@ -202,13 +197,11 @@ function MediaPage() {
         setError(null);
         // TODO: contacts endpoint
 
-        const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
         const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT || ""
-        const targetUrl = buildUrl(serviceUrl, endpoint);
         const token = getCookie("token");
 
         try {
-            const response = await fetch(targetUrl, {
+            const response = await fetch(endpoint, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -239,13 +232,11 @@ function MediaPage() {
     const fetchRecommended = async(event) => {
         setError(null);
 
-        const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
         const endpoint = window.__ENV__?.VITE_RECOMMENDED_ENDPOINT || ""
-        const targetUrl = buildUrl(serviceUrl, endpoint);
         const token = getCookie("token");
 
         try {
-            const response = await fetch(targetUrl, {
+            const response = await fetch(endpoint, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",

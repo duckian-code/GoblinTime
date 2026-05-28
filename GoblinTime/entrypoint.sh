@@ -12,8 +12,8 @@ cat > "$CONFIG_JS" << EOF
 // Generated at container startup — do not edit manually
 window.__ENV__ = {
   VITE_WS_URL: "$(escape_js "${VITE_WS_URL}")",
-  VITE_USER_SERVICE_URL: "$(escape_js "${VITE_USER_SERVICE_URL}")",
-  VITE_AUTH_SERVICE_URL: "$(escape_js "${VITE_AUTH_SERVICE_URL}")",
+  VITE_USER_SERVICE_URL: "",
+  VITE_AUTH_SERVICE_URL: "",
   VITE_LIVEKIT_SERVICE_URL: "$(escape_js "${VITE_LIVEKIT_SERVICE_URL}")",
   VITE_REGISTER_ENDPOINT: "$(escape_js "${VITE_REGISTER_ENDPOINT}")",
   VITE_LOGIN_ENDPOINT: "$(escape_js "${VITE_LOGIN_ENDPOINT}")",
