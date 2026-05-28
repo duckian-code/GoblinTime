@@ -11,3 +11,4 @@
 *.swp
 .gitignore
 GoblinAuth/auth-secret.yaml
+docker-compose.yaml
