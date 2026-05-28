@@ -1,12 +1,13 @@
 package main
 
 import (
-	"bytes"
+	"GoblinSecurity/data" // will change to user id
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -24,6 +25,8 @@ type VideoTokenRequest struct {
 }
 
 func main() {
+	loadAuthEnv()
+
 	if os.Getenv("JWT_SECRET") == "" {
 		log.Fatal("JWT_SECRET environment variable is required.")
 	}
