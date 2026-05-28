@@ -20,7 +20,7 @@ spec:
             - containerPort: 8089
           envFrom:
             - configMapRef:
-                name: goblin-configmap
+                name: auth-configmap
             - secretRef:
                 name: auth-secret
 ---
