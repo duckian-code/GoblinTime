@@ -29,9 +29,15 @@ spec:
           image: postgres:16
           env:
             - name: POSTGRES_USER
-              value: "admin"
+              valueFrom:
+                secretKeyRef:
+                  name: goblin-secrets
+                  key: db-user
             - name: POSTGRES_PASSWORD
-              value: "penguin"
+              valueFrom:
+                secretKeyRef:
+                  name: goblin-secrets
+                  key: db-password
             - name: POSTGRES_DB
               value: "GoblinTime"
           ports:
