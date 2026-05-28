@@ -56,7 +56,7 @@ function MediaPage() {
 
     const contacts = [
         {username: "Anonymous Goblin", uuid: "1234567890"},
-        // "Less Anonymous Goblin",
+        // "Less Anonymous Goblin",acks, setLocalTracks] = useState([]);
         // "Super Anonymous Goblin"
     ];
 
@@ -168,13 +168,12 @@ function MediaPage() {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ friendUsername: userName }),
+                body: JSON.stringify({ friend_username: userName }),
             });
 
             if (!response.ok) {
                 throw new Error("Failed to add friend");
             }
-
 
             // Simulate successful POST request
             console.log(`Successfully sent friend request to ${userName}`);

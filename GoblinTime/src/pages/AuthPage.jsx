@@ -24,18 +24,10 @@ function AuthPage() {
     };
 
     const handleSubmit = async(event) => {
+        console.log("Auth Page Handle Submit");
         event.preventDefault(); // prevents default page reload
         setIsLoading(true); // deprecated
         setError(null);
-
-
-        const getCookie = (name) => {
-            const cookie = document.cookie
-                .split("; ")
-                .find((row) => row.startsWith(`${name}=`));
-
-            return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
-        };
 
         const setCookie = (key, value) => {
             document.cookie = `${key}=${value}; path=/; max-age=3600`;
@@ -50,7 +42,8 @@ function AuthPage() {
             ...(isSignUp && { email, clan }) // only include email & clan if signing up
         };
 
-        const token = getCookie("token");
+        console.log("Payload Being Sent to Frontend: ", JSON.stringify(payload));
+
 
         try {
             if(isSignUp) { // SIGN UP - POST TO USER SERVICE
@@ -60,7 +53,7 @@ function AuthPage() {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
+                        // "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify(payload),
                 });
@@ -80,7 +73,7 @@ function AuthPage() {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
+                        // "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify(payload),
                 });
@@ -104,14 +97,6 @@ function AuthPage() {
         }
     }
 
-    const getCookie = (name) => {
-        const cookie = document.cookie
-            .split("; ")
-            .find((row) => row.startsWith(`${name}=`));
-
-        return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
-    };
-
     return (
         <div className="page auth-page">
             <div className="auth-container">
@@ -126,7 +111,23 @@ function AuthPage() {
 
                     <form className="auth-form" onSubmit={handleSubmit}>
                         {isSignUp && (
-                            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required/>
+                            <>
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+
+                                <input
+                                    type="text"
+                                    placeholder="Clan"
+                                    value={clan}
+                                    onChange={(e) => setClan(e.target.value)}
+                                    required
+                                />
+                            </>
                         )}
                         <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required/>
                         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required/>
