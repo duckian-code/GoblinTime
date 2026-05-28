@@ -9,5 +9,6 @@
 *.njsproj
 *.sln
 *.swp
-.gitignore
-GoblinAuth/auth-secret.yaml
+
+# Secrets
+WebRTC/Infra/create-secrets.sh
