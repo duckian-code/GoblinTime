@@ -140,7 +140,7 @@ func deleteGoblin(w http.ResponseWriter, r *http.Request) {
 
 func updateGoblinProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	if r.Method != http.StatusMethodNotAllowed && r.Method != http.MethodPatch {
+	if r.Method != http.MethodPatch {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
