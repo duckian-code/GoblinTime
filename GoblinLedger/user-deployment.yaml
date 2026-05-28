@@ -29,7 +29,7 @@ spec:
             - name: DB_CONFIG
               valueFrom:
                 configMapKeyRef:
-                  name: goblin-config
+                  name: user-config
                   key: db-config-string
 
             # Pulls the sensitive username and password credentials
