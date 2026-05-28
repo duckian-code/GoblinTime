@@ -2,13 +2,13 @@ import { useState } from "react";
 import {useNavigate} from "react-router-dom";
 import { useWebSocket } from "../context/WebSocketContext.jsx";
 import logo from "../assets/logo.png";
-import { buildUrl } from "../utils/urlHelper.js";
 
 function AuthPage() {
     const { connectWs } = useWebSocket(); // Import the useWebSocket hook
     const [isSignUp, setIsSignUp] = useState(false);
 
     const [email, setEmail] = useState("");
+    const [clan, setClan] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
@@ -47,18 +47,16 @@ function AuthPage() {
         const payload = {
             username,
             password,
-            ...(isSignUp && { email }) // only include email if signing up
+            ...(isSignUp && { email, clan }) // only include email & clan if signing up
         };
 
         const token = getCookie("token");
 
         try {
             if(isSignUp) { // SIGN UP - POST TO USER SERVICE
-                const userUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
                 const registerEndpoint = window.__ENV__?.VITE_REGISTER_ENDPOINT || "";
 
-                const targetUrl = buildUrl(userUrl, registerEndpoint);
-                const response = await fetch(targetUrl, {
+                const response = await fetch(registerEndpoint, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -76,11 +74,9 @@ function AuthPage() {
 
                 navigate(0);
             } else {
-                const serviceUrl = window.__ENV__?.VITE_AUTH_SERVICE_URL || "";
                 const loginEndpoint = window.__ENV__?.VITE_LOGIN_ENDPOINT || "";
 
-                const targetUrl = buildUrl(serviceUrl, loginEndpoint);
-                const response = await fetch(targetUrl, {
+                const response = await fetch(loginEndpoint, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

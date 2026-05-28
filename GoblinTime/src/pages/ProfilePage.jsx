@@ -25,9 +25,6 @@ function ProfilePage() {
         return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
     };
 
-    const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
-    const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT || ""
-
     const setCookie = (key, value) => {
         document.cookie = `${key}=${value}; path=/; max-age=3600`;
         console.log("Cookie set:", key, value);
@@ -36,11 +33,9 @@ function ProfilePage() {
 
     const fetchContacts = async(event) => {
         setError(null);
-        // TODO: contacts endpoint
 
-
-        // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}/`;
+        const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT || "";
+        const targetUrl = endpoint;
         const token = getCookie("token");
         try {
             const response = await fetch(targetUrl, {
@@ -76,10 +71,8 @@ function ProfilePage() {
             return;
         }
 
-        const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
-        const endpoint = window.__ENV__?.VITE_USER_ENDPOINT || ""
-        // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}/`;
+        const endpoint = window.__ENV__?.VITE_USER_ENDPOINT || "";
+        const targetUrl = endpoint;
 
         try {
             const response = await fetch(targetUrl, {
@@ -108,10 +101,8 @@ function ProfilePage() {
     }
 
     const handleSubmit = async(event) => {
-        const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
-        const endpoint = window.__ENV__?.VITE_USER_ENDPOINT || ""
-        // TODO: IF SERVICE URL INCLUDES SLASH, REMOVE IT HERE
-        const targetUrl = `${serviceUrl}/${endpoint}/`;
+        const endpoint = window.__ENV__?.VITE_USER_ENDPOINT || "";
+        const targetUrl = endpoint;
 
         const payload = {
             clan
@@ -144,9 +135,7 @@ function ProfilePage() {
 
     const addFriend = async(event) => {
         event.preventDefault();
-        const serviceUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
         const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT || ""
-        const targetUrl = `${serviceUrl}/${endpoint}/`;
 
         const payload = {
             friend // friend ID
@@ -155,7 +144,7 @@ function ProfilePage() {
         const token = getCookie("token");
 
         try {
-            const response = await fetch(targetUrl, {
+            const response = await fetch(endpoint, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
