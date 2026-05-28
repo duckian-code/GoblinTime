@@ -37,8 +37,8 @@ func main() {
 	mux.HandleFunc("GET /validate", validateHandler)
 	mux.HandleFunc("POST /video/token", tokenHandler)
 
-	fmt.Println("Auth service listening on port 8088")
-	log.Fatal(http.ListenAndServe(":8088", mux))
+	fmt.Println("Auth service listening on port 8089")
+	log.Fatal(http.ListenAndServe(":8089", mux))
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
