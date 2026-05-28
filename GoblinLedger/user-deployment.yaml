@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userservice-deployment
+  labels:
+    app: userservice
+spec:
+  replicas: 2 # Standard high-availability setup
+  selector:
+    matchLabels:
+      app: userservice
+  template:
+    metadata:
+      labels:
+        app: userservice
+    spec:
+      containers:
+        - name: ledger-manager
+          image: xpenguingodx/userservice:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8088
+          env:
+            # Maps the unified database connection string directly to the DB_URL variable your code needs
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: goblin-secrets
+                  key: database-url
