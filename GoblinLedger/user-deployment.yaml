@@ -5,7 +5,7 @@ metadata:
   labels:
     app: userservice
 spec:
-  replicas: 2 # Standard high-availability setup
+  replicas: 2
   selector:
     matchLabels:
       app: userservice
@@ -21,9 +21,20 @@ spec:
           ports:
             - containerPort: 8088
           env:
-            # Maps the unified database connection string directly to the DB_URL variable your code needs
+            # Combines the ConfigMap string and the Secret string into the exact format GORM expects!
             - name: DB_URL
+              value: "$(DB_CONFIG) $(DB_CREDS)"
+
+            # Pulls the public host and database settings
+            - name: DB_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: goblin-config
+                  key: db-config-string
+
+            # Pulls the sensitive username and password credentials
+            - name: DB_CREDS
               valueFrom:
                 secretKeyRef:
                   name: goblin-secrets
-                  key: database-url
+                  key: db-credentials
