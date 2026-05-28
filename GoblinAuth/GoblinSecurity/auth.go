@@ -1,16 +1,13 @@
 package main
 
 import (
-	"GoblinSecurity/data" // will change to user id
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/livekit/protocol/auth" // The LiveKit Go SDK package!
 )
 
@@ -36,7 +33,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /users/login", loginHandler)
+	mux.HandleFunc("POST /user/login", loginHandler)
 	mux.HandleFunc("GET /validate", validateHandler)
 	mux.HandleFunc("POST /video/token", tokenHandler)
 
