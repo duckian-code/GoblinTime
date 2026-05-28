@@ -62,8 +62,8 @@ function AuthPage() {
                     throw new Error(`User Service responded swith status: ${response.status}`);
                 }
 
-                const data = await response.json();
-                console.log("User Service successful POST: ", data);
+                // const data = await response.json();
+                console.log("User Service successful POST");
 
                 navigate(0);
             } else {
@@ -82,8 +82,8 @@ function AuthPage() {
                     throw new Error(`User Service responded swith status: ${response.status}`);
                 }
 
-                const data = await response.json();
-                console.log("User Service successful POST: ", data);
+                // const data = await response.json();
+                console.log("User Service successful POST");
 
                 setCookie("token", data.token);
 
