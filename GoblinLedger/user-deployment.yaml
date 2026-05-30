@@ -5,7 +5,7 @@ metadata:
   labels:
     app: user-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: user-service
@@ -21,20 +21,8 @@ spec:
           ports:
             - containerPort: 8088
           env:
-            # Combines the ConfigMap string and the Secret string into the exact format GORM expects!
             - name: DB_URL
-              value: "$(DB_CONFIG) $(DB_CREDS)"
-
-            # Pulls the public host and database settings
-            - name: DB_CONFIG
-              valueFrom:
-                configMapKeyRef:
-                  name: user-config
-                  key: db-config-string
-
-            # Pulls the sensitive username and password credentials
-            - name: DB_CREDS
               valueFrom:
                 secretKeyRef:
                   name: goblin-secrets
-                  key: db-credentials
+                  key: db-url
