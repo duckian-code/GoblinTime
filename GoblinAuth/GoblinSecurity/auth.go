@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/livekit/protocol/auth" // The LiveKit Go SDK package!
 )
 
@@ -22,7 +24,6 @@ type VideoTokenRequest struct {
 }
 
 func main() {
-	loadAuthEnv()
 
 	if os.Getenv("JWT_SECRET") == "" {
 		log.Fatal("JWT_SECRET environment variable is required.")
