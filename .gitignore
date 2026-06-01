@@ -9,6 +9,12 @@
 *.njsproj
 *.sln
 *.swp
+<<<<<<< HEAD
+.gitignore
+GoblinAuth/auth-secret.yaml
+docker-compose.yaml
+=======
 
 # Secrets
 WebRTC/Infra/create-secrets.sh
+>>>>>>> origin/main

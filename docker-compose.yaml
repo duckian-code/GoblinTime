@@ -12,18 +12,24 @@ services:
       - "5432:5432"
     volumes:
       - goblin_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  GoblinLedger:
-    image: goblinledger
+  goblin-ledger:
+    #image: goblinledger
     build:
       context: ./GoblinLedger
-    container_name: GoblinLedger
+    container_name: goblin-ledger
     environment:
       DB_URL: host=postgres user=admin password=penguin dbname=GoblinTime port=5432 sslmode=disable
     ports:
       - "8088:8088"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
    # profiles:
     #  - user
 
@@ -35,33 +41,33 @@ services:
     ports:
       - "8089:8089"
     environment:
-      USER_SERVICE_URL: http://GoblinLedger:8088
+      USER_SERVICE_URL: http://goblin-ledger:8088
       DB_URL: host=postgres user=admin password=penguin dbname=GoblinTime port=5432 sslmode=disable
       JWT_SECRET: fe120c6ea821e63927344f13ab90b88423bb6f77c683811de1d9d2bedbbf2a7
     depends_on:
-      - GoblinLedger
+      - goblin-ledger
    # profiles:
     #  - auth
 
-  GoblinTimeSignaling:
-    image: goblintimesignaling
+  goblin-time-signaling:
+    #image: goblintimesignaling
     build:
       context: ./GoblinTimeSignaling
-    container_name: GoblinTimeSignaling
+    container_name: goblin-time-signaling
     ports:
-      - "8083:8083"
+      - "8090:8090"
     environment:
-      USER_SERVICE_URL: http://GoblinLedger:8088
+      USER_SERVICE_URL: http://goblin-ledger:8088
     depends_on:
-      - GoblinLedger
+      - goblin-ledger
   #  profiles:
    #   - signaling
 
-  GoblinTime:
-    image: goblintime
+  goblin-time:
+    #image: goblintime
     build:
       context: ./GoblinTime
-    container_name: GoblinTime
+    container_name: goblin-time
     ports:
       - "3000:80"
     environment:
@@ -74,12 +80,12 @@ services:
       VITE_FRIEND_ENDPOINT: /user/contacts/recommendations
 
       VITE_REGISTER_ENDPOINT: /user/register
-      VITE_LOGIN_ENDPOINT: /users/login
+      VITE_LOGIN_ENDPOINT: /user/login
 
     depends_on:
-      - GoblinLedger
+      - goblin-ledger
       - goblin-security
-      - GoblinTimeSignaling
+      - goblin-time-signaling
  #   profiles:
   #    - frontend
 
