@@ -60,7 +60,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	UserServiceVerifyEndPoint := "http://LedgerManager:8088/internal/verify"
+	UserServiceVerifyEndPoint := "http://goblin-ledger:8088/internal/verify"
 	resp, err := http.Post(UserServiceVerifyEndPoint, "application/json", bytes.NewBuffer(verifyPayload))
 	if err != nil {
 		http.Error(w, "User database service is unreachable", http.StatusInternalServerError)
