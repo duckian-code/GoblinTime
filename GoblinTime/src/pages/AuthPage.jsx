@@ -2,13 +2,13 @@ import { useState } from "react";
 import {useNavigate} from "react-router-dom";
 import { useWebSocket } from "../context/WebSocketContext.jsx";
 import logo from "../assets/logo.png";
-import { buildUrl } from "../utils/urlHelper.js";
 
 function AuthPage() {
     const { connectWs } = useWebSocket(); // Import the useWebSocket hook
     const [isSignUp, setIsSignUp] = useState(false);
 
     const [email, setEmail] = useState("");
+    const [clan, setClan] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
@@ -24,18 +24,10 @@ function AuthPage() {
     };
 
     const handleSubmit = async(event) => {
+        console.log("Auth Page Handle Submit");
         event.preventDefault(); // prevents default page reload
         setIsLoading(true); // deprecated
         setError(null);
-
-
-        const getCookie = (name) => {
-            const cookie = document.cookie
-                .split("; ")
-                .find((row) => row.startsWith(`${name}=`));
-
-            return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
-        };
 
         const setCookie = (key, value) => {
             document.cookie = `${key}=${value}; path=/; max-age=3600`;
@@ -47,22 +39,21 @@ function AuthPage() {
         const payload = {
             username,
             password,
-            ...(isSignUp && { email }) // only include email if signing up
+            ...(isSignUp && { email, clan }) // only include email & clan if signing up
         };
 
-        const token = getCookie("token");
+        console.log("Payload Being Sent to Frontend: ", JSON.stringify(payload));
+
 
         try {
             if(isSignUp) { // SIGN UP - POST TO USER SERVICE
-                const userUrl = window.__ENV__?.VITE_USER_SERVICE_URL || "";
                 const registerEndpoint = window.__ENV__?.VITE_REGISTER_ENDPOINT || "";
 
-                const targetUrl = buildUrl(userUrl, registerEndpoint);
-                const response = await fetch(targetUrl, {
+                const response = await fetch(registerEndpoint, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
+                        // "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify(payload),
                 });
@@ -71,20 +62,18 @@ function AuthPage() {
                     throw new Error(`User Service responded swith status: ${response.status}`);
                 }
 
-                const data = await response.json();
-                console.log("User Service successful POST: ", data);
+                // const data = await response.json();
+                console.log("User Service successful POST");
 
                 navigate(0);
             } else {
-                const serviceUrl = window.__ENV__?.VITE_AUTH_SERVICE_URL || "";
                 const loginEndpoint = window.__ENV__?.VITE_LOGIN_ENDPOINT || "";
 
-                const targetUrl = buildUrl(serviceUrl, loginEndpoint);
-                const response = await fetch(targetUrl, {
+                const response = await fetch(loginEndpoint, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
+                        // "Authorization": `Bearer ${token}`
                     },
                     body: JSON.stringify(payload),
                 });
@@ -94,7 +83,7 @@ function AuthPage() {
                 }
 
                 const data = await response.json();
-                console.log("User Service successful POST: ", data);
+                console.log("User Service successful POST");
 
                 setCookie("token", data.token);
 
@@ -107,14 +96,6 @@ function AuthPage() {
             setIsLoading(false);
         }
     }
-
-    const getCookie = (name) => {
-        const cookie = document.cookie
-            .split("; ")
-            .find((row) => row.startsWith(`${name}=`));
-
-        return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
-    };
 
     return (
         <div className="page auth-page">
@@ -130,7 +111,23 @@ function AuthPage() {
 
                     <form className="auth-form" onSubmit={handleSubmit}>
                         {isSignUp && (
-                            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required/>
+                            <>
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+
+                                <input
+                                    type="text"
+                                    placeholder="Clan"
+                                    value={clan}
+                                    onChange={(e) => setClan(e.target.value)}
+                                    required
+                                />
+                            </>
                         )}
                         <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required/>
                         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required/>

@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: user-config
-data:
-  db-config-string: "host=GoblinLedger dbname=GoblinTime port=5432 sslmode=disable"

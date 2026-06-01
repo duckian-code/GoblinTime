@@ -33,11 +33,11 @@ export const CallProvider = ({ children }) => {
     };
 
     const joinLiveKitRoom = useCallback(async (roomName, username) => {
-        const serviceUrl = window.__ENV__?.VITE_LIVEKIT_SERVICE_URL || '';
+        const endpoint = window.__ENV__?.VITE_LIVEKIT_ENDPOINT || '';
         const token = getCookie('token');
 
         try {
-            const response = await fetch(`${serviceUrl}/token`, {
+            const response = await fetch(`${endpoint}/token`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

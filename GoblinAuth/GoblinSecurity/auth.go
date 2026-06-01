@@ -1,13 +1,12 @@
 package main
 
 import (
-	"GoblinSecurity/data" // will change to user id
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -25,7 +24,6 @@ type VideoTokenRequest struct {
 }
 
 func main() {
-	loadAuthEnv()
 
 	if os.Getenv("JWT_SECRET") == "" {
 		log.Fatal("JWT_SECRET environment variable is required.")
@@ -36,7 +34,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /users/login", loginHandler)
+	mux.HandleFunc("POST /user/login", loginHandler)
 	mux.HandleFunc("GET /validate", validateHandler)
 	mux.HandleFunc("POST /video/token", tokenHandler)
 
