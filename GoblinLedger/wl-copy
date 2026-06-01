@@ -281,7 +281,7 @@ func DoesGoblinExist(username string, password string) int {
 		return -1
 	}
 	var goblinInQuestion Goblin
-	err := db.Where("username = ?", username).First(&goblinInQuestion).Error
+	err := db.Where("username = ?", username).Scan(&goblinInQuestion).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return -1
