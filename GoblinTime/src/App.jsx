@@ -43,7 +43,11 @@ function App() {
                                 <ProfilePage />
                             </ProtectedRoute>
                         } />
-                        <Route path="/media" element={<MediaPage />} />
+                        <Route path="/media" element={
+                            <ProtectedRoute>
+                                <MediaPage />
+                            </ProtectedRoute>
+                        } />
                     </Routes>
                 </main>
 
