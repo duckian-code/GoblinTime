@@ -26,7 +26,7 @@ function MediaPage() {
         caller, setCaller, isReceivingCall, setIsReceivingCall
     } = useCallContext();
 
-// From WebSocket Context
+    // From WebSocket Context
     const {
         connectWs,
         callState, incomingCall, initiateCall, cancelCall, acceptCall, rejectCall, endCall
@@ -38,7 +38,7 @@ function MediaPage() {
             // If we are calling, and the state changes to accepted, and we aren't in a room yet
             if (isCalling && callState === 'accepted' && !lkRoom) {
                 const data = await getUserData();
-                await joinLiveKitRoom(roomName.current, data.username);
+                await joinLiveKitRoom(roomName.current, data?.Username || data?.username);
             }
         };
         connectCaller();
@@ -70,7 +70,6 @@ function MediaPage() {
 
     const [error, setError] = useState(null);
 
-
     const getCookie = (name) => {
         const cookie = document.cookie
             .split("; ")
@@ -79,11 +78,8 @@ function MediaPage() {
         return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
     };
 
-
-
     const getUserData = async() => {
         setError(null);
-
         try {
             const data = await fetchProfile();
             setError(null);
@@ -92,15 +88,16 @@ function MediaPage() {
             console.error("Profile Error: ", err);
             setError(err.message || "An error occurred while loading the profile. Please try again.");
         }
-    }
+    };
 
     const roomName = useRef("");
 
     // CLICK HANDLERS
     const handleContactClick = async (contact) => {
-        setCallTarget(contact.username);
+        const targetUsername = contact.Username || contact.username;
+        setCallTarget(targetUsername);
         setIsCalling(true);
-        console.log(`Initiating call to ${contact.username}...`);
+        console.log(`Initiating call to ${targetUsername}...`);
 
         const data = await getUserData();
         if (!data) {
@@ -109,13 +106,12 @@ function MediaPage() {
             return;
         }
 
+        const currentId = data.ID ?? data.id ?? data.uuid;
+        const targetId = contact.ID ?? contact.uuid ?? contact.id;
 
-
-        const currentId = data.ID ?? data.id;
-        const targetId = contact.ID ?? contact.id;
         roomName.current = `room-${currentId}-${targetId}`;
 
-        initiateCall(targetId, roomName.current, currentId, data.Username);
+        initiateCall(targetId, roomName.current, currentId, data.Username || data.username);
     };
 
     const handleCancelOutgoingCall = () => {
@@ -134,7 +130,7 @@ function MediaPage() {
     };
 
     const handleAddFriendClick = async (contact) => {
-        const username = contact.username;
+        const username = contact.Username || contact.username || contact;
         setError(null);
 
         try {
@@ -155,31 +151,12 @@ function MediaPage() {
         }
     };
 
-
-    const fetchContacts = async() => {}
     const loadContacts = async() => {
         setError(null);
-
         try {
-            const response = await fetch(endpoint, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error(`User Service responded with status: ${response.status}`);
-            }
-
-            const data = await response.json();
+            const data = await fetchContacts();
             console.log("User Service successful GET: ", data);
-
             setContacts(Array.isArray(data) ? data : []);
-
-
-            setContacts(await fetchContacts());
         } catch (err) {
             console.error("Contacts Error: ", err);
             setError(err.message || "An error occurred while loading contacts. Please try again.");
@@ -199,13 +176,11 @@ function MediaPage() {
     const createRoom = async(event) => {
         setError(null);
         const serviceUrl = window.__ENV__?.VITE_LIVEKIT_SERVICE_URL || "";
-    }
-
+    };
 
     const fetchRecommended = async() => {
         setError(null);
-
-        const endpoint = window.__ENV__?.VITE_RECOMMENDED_ENDPOINT || ""
+        const endpoint = window.__ENV__?.VITE_RECOMMENDED_ENDPOINT || "";
         const token = getCookie("token");
 
         try {
@@ -223,21 +198,16 @@ function MediaPage() {
 
             const data = await response.json();
             console.log("User Service successful GET: ", data);
-
             setRecommended(Array.isArray(data) ? data : []);
-
         } catch (err) {
             console.error("Auth Error: ", err);
             setError(err.message || "An error occurred during authentication. Please try again.");
         }
-    }
+    };
 
+    // Corrected unclosed dual hook lifecycle scope
     useEffect(() => {
         connectWs();
-        fetchContacts();
-        fetchRecommended();
-
-    useEffect(() => {
         loadContacts();
         loadRecommendedContacts();
     }, []);
@@ -247,14 +217,13 @@ function MediaPage() {
             <aside className="sidebar">
                 <button onClick={() => simulateIncomingCall("John Goblin")}>Demo Incoming Call</button>
 
-
                 <section>
                     {error && <p className="profile-error" style={{ color: "red"}}>{error}</p>}
                     <h3>Contacts</h3>
                     <ul style={{ listStyleType: 'none', padding: 0 }}>
                         {contacts.map((contact) => (
                             <li
-                                key={contact.ID} // Use the UUID as the React key
+                                key={contact.ID}
                                 className="clickable-list-item"
                                 onClick={() => handleContactClick({ username: contact.Username, uuid: contact.ID })}
                             >
@@ -296,19 +265,17 @@ function MediaPage() {
                     actionLabel="+"
                     onContactClick={handleAddFriendClick}
                 />
-
             </aside>
 
             <section className="media-content">
                 {lkRoom && lkToken ? (
                     <div style={{ height: '100%', width: '100%' }}>
                         <LiveKitRoom
-                            room={lkRoom} // Pass the manually created room instance
+                            room={lkRoom}
                             token={lkToken}
                             serverUrl={lkUrl}
                             data-lk-theme="default"
                             onDisconnected={() => {
-                                // Trigger teardown and notify peer when user clicks End Call
                                 leaveLiveKitRoom(endCall);
                             }}
                         >
@@ -326,7 +293,6 @@ function MediaPage() {
 
             {/* Outgoing Call */}
             <OutgoingCall
-                // Only show if we initiated it AND the socket state is ringing
                 isOpen={isCalling && callState === 'ringing' && !incomingCall}
                 calleeName={callTarget}
                 onCancel={handleCancelOutgoingCall}
@@ -338,10 +304,9 @@ function MediaPage() {
                 callerName={incomingCall?.callerName}
                 onAccept={async () => {
                     acceptCall();
-                    // TODO: Connect to LiveKit room using incomingCall.roomName
                     const data = await getUserData();
-                    await joinLiveKitRoom(incomingCall.roomName, data.username);
-                        console.log(`Joining room: ${incomingCall.roomName}`);
+                    await joinLiveKitRoom(incomingCall.roomName, data?.Username || data?.username);
+                    console.log(`Joining room: ${incomingCall.roomName}`);
                 }}
                 onDeny={() => {
                     rejectCall();
@@ -354,9 +319,8 @@ function MediaPage() {
                 isVisible={showToast}
                 message={toastMessage}
             />
-
         </div>
     );
-
+}
 
 export default MediaPage;
