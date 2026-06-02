@@ -156,7 +156,7 @@ function MediaPage() {
     };
 
 
-    const fetchContacts = async() => {
+    const fetchContacts = async() => {}
     const loadContacts = async() => {
         setError(null);
 
