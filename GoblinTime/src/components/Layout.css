@@ -127,6 +127,7 @@ a:hover {
 .auth-section h2,
 .profile-info h2,
 .contacts-section h2,
+.contact-list-section h3,
 .sidebar h3 {
     color: var(--text);
 }
@@ -198,7 +199,8 @@ button:hover {
 }
 
 .profile-info,
-.contacts-section {
+.contacts-section,
+.contact-list-section {
     min-width: 250px;
     padding: 20px;
     background: var(--panel);
@@ -208,6 +210,7 @@ button:hover {
 
 .profile-info p,
 .contacts-section li,
+.empty-list-message,
 .sidebar li {
     color: var(--muted-text);
 }
@@ -227,15 +230,53 @@ button:hover {
 }
 
 .contacts-section ul,
-.sidebar ul {
+.sidebar ul,
+.contact-list {
     list-style: none;
     padding-left: 0;
 }
 
 .contacts-section li,
-.sidebar li {
+.sidebar li,
+.contact-list li {
     padding: 7px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.contact-list-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.contact-list-button {
+    width: 100%;
+    padding: 8px 0;
+    color: var(--muted-text);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    font-weight: 400;
+}
+
+.contact-list-button:hover:not(:disabled) {
+    color: var(--text);
+    background: transparent;
+}
+
+.contact-list-button:disabled {
+    cursor: default;
+    opacity: 1;
+}
+
+.contact-list-button small {
+    margin-left: auto;
+    color: #9b9ba0;
+    font-size: 12px;
 }
 
 .media-layout {
