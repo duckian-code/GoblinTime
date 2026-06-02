@@ -2,3 +2,10 @@ docker run --name GoblinLedger --network GoblinNetwork -e POSTGRES_USER=admin -e
 
 
 we need to decide who is gonna have the main function since both the user and auth are going to exist in the same container, ONLY one needs to be exposing us to a port
+
+Websocketcontextts needs to be verified to see if it still works with the signaling service, const connectWs()
+
+call states are mixed up with call types, in signalling service
+
+canceled state needs to be added to the socket service
+

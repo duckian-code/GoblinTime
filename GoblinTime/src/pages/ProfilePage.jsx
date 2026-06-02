@@ -1,95 +1,180 @@
 import {useEffect, useState} from "react";
-import ContactList from "../components/ContactList.jsx";
-import {
-    addContact,
-    fetchContacts,
-    fetchProfile,
-    updateProfile,
-} from "../utils/contactApi.js";
 
 function ProfilePage() {
     const [profileData, setProfileData] = useState({
         username: "",
-        email: "",
-        clan: "",
+        email: ""
     });
     const [error, setError] = useState(null);
-    const [contacts, setContacts] = useState([]);
     const [clan, setClan] = useState("");
     const [friend, setFriend] = useState("");
 
-    const loadContacts = async () => {
-        setError(null);
+    const contacts = [
+    //     "GoblinKing42",
+    //     "CaveDweller",
+    //     "MossWizard",
+    //     "DungeonRat",
+    //     "SwampSorcerer"
+    ];
 
-        try {
-            const data = await fetchContacts();
-            setContacts(data);
-        } catch (err) {
-            console.error("Contacts Error: ", err);
-            setError(err.message || "An error occurred while loading contacts. Please try again.");
-        }
+    const getCookie = (name) => {
+        const cookie = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith(`${name}=`));
+
+        return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
     };
 
-    const loadProfile = async() => {
+    const setCookie = (key, value) => {
+        document.cookie = `${key}=${value}; path=/; max-age=3600`;
+        console.log("Cookie set:", key, value);
+        return true; // True on successful assignment
+    }
+
+    const fetchContacts = async(event) => {
         setError(null);
 
+        const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT || "";
+        const targetUrl = endpoint;
+        const token = getCookie("token");
         try {
-            const data = await fetchProfile();
+            const response = await fetch(targetUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`User Service responded with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("User Service successful GET: ", data);
+
+            setError(null);
+            return data;
+        } catch (err) {
+            console.error("Auth Error: ", err);
+            setError(err.message || "An error occurred during authentication. Please try again.");
+        }
+    }
+
+    const profile = async() => {
+        setError(null);
+
+        const token = getCookie("token");
+
+        if (!token) {
+            setError("Unable to load profile: JWT cookie was not found.");
+            return;
+        }
+
+        const endpoint = window.__ENV__?.VITE_USER_ENDPOINT || "";
+        const targetUrl = endpoint;
+
+        try {
+            const response = await fetch(targetUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`User Service responded with status: ${response.status}`);
+            }
+
+            const data = await response.json();
             setProfileData({
                 username: data.username || "",
                 email: data.email || "",
-                clan: data.clan || "",
+                clan: data.clan || ""
             });
             setError(null);
         } catch (err) {
             console.error("Profile Error: ", err);
             setError(err.message || "An error occurred while loading the profile. Please try again.");
         }
-    };
+    }
 
     const handleSubmit = async(event) => {
-        event.preventDefault();
-        setError(null);
-
-        const trimmedClan = clan.trim();
+        const endpoint = window.__ENV__?.VITE_USER_ENDPOINT || "";
+        const targetUrl = endpoint;
 
         const payload = {
-            clan: trimmedClan,
+            clan
         };
 
+        const token = getCookie("token");
+
         try {
-            await updateProfile(payload);
-            setProfileData((currentProfile) => ({
-                ...currentProfile,
-                clan: trimmedClan,
-            }));
-            setClan("");
+            const response = await fetch(targetUrl, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                throw new Error(`User Service responded with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("User Service successful PATCH: ", data);
             setError(null);
         } catch (err) {
-            console.error("Profile Update Error: ", err);
+            console.error("Auth Error: ", err);
             setError(err.message || "An error occurred PATCHing goblin. Please try again.");
         }
-    };
+    }
 
     const addFriend = async(event) => {
         event.preventDefault();
-        setError(null);
+        const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT || ""
+
+        const payload = {
+            friend // friend ID
+        }
+
+        const token = getCookie("token");
 
         try {
-            await addContact(friend.trim());
-            await loadContacts();
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                throw new Error(`User Service responded with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("User Service successful POST: ", data);
             setFriend("");
             setError(null);
         } catch (err) {
-            console.error("Contact Add Error: ", err);
+            console.error("Auth Error: ", err);
             setError(err.message || "An error occurred adding goblin friend. Please try again.");
         }
-    };
+    }
 
+    // ADD TOKEN AS HEADER BEFORE SENDING TO ENDPOINT
     useEffect(() => {
-        loadProfile();
-        loadContacts();
+        profile();
+        fetchContacts();
     }, []);
+
+    void fetchContacts;
+    void handleSubmit;
 
     return (
         <div className="page profile-page">
@@ -108,13 +193,7 @@ function ProfilePage() {
                 </p>
 
                 <form className="profile-form" onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        placeholder="Change Clan Name"
-                        value={clan}
-                        onChange={(e) => setClan(e.target.value)}
-                        required
-                    />
+                    <input type="text" placeholder="Change Clan Name" onChange={(e) => setClan(e.target.value)} required />
                     <button type="submit">Enlist</button>
                 </form>
             </section>
@@ -128,11 +207,15 @@ function ProfilePage() {
                 </form>
             </section>
 
-            <ContactList
-                title="Contacts"
-                contacts={contacts}
-                emptyMessage="No contacts yet."
-            />
+            <section className="contacts-section">
+                <h2>Contacts</h2>
+
+                <ul>
+                    {contacts.map((contact, index) => (
+                        <li key={index}>{contact}</li>
+                    ))}
+                </ul>
+            </section>
 
         </div>
     );

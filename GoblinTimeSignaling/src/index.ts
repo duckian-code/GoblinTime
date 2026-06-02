@@ -3,7 +3,7 @@ import http from 'http';
 import WebSocket, { WebSocketServer } from 'ws';
 import url from 'url';
 
-type CallState = 'ringing' | 'accepted' | 'ended' | 'rejected';
+type CallState = 'ringing' | 'accepted' | 'ended' | 'rejected' | 'cancelled';
 
 interface CallSession {
     roomName: string;
@@ -52,11 +52,11 @@ wss.on('connection', async (ws: WebSocket, req: http.IncomingMessage) => {
 
         const data = await response.json();
 
-        if (!data.uuid) {
+        if (!data.ID) {
             throw new Error('User Service did not return a valid UUID');
         }
 
-        userId = data.uuid;
+        userId = String(data.ID);
 
     } catch (err) {
         console.error('Authentication failed:', err);
@@ -89,22 +89,26 @@ function handleSignalingMessage(senderId: string, msg: any) {
     switch (type) {
         case 'CALL_INVITE': {
             const { roomName, callerId, callerName, calleeId } = payload;
+            console.log(` Processing CALL_INVITE: Room=${roomName}, Caller=${callerId}, Callee=${calleeId}`);
             // TODO: IS REMOVING CALLEEID GOOD?
+            const targetStringId = String(calleeId);
+            const callerStringId = String(callerId);
             sessions.set(roomName, {
                 roomName,
-                callerId,
-                calleeId,
+                callerId: callerStringId,
+                calleeId: targetStringId,
                 state: 'ringing'
             });
 
-            const targetConn = clients.get(calleeId);
+            const targetConn = clients.get(targetStringId);
             if (targetConn && targetConn.readyState === WebSocket.OPEN) {
+                console.log(` Relaying INVITE payload to callee connection channel: ${targetStringId}`);
                 targetConn.send(JSON.stringify({
                     type: 'CALL_INVITE',
                     payload: { roomName, callerId, callerName }
                 }));
             } else {
-                console.log(`Target user ${calleeId} is not connected.`);
+                console.log(`Target user ${targetStringId} is not connected to a live socket.`);
             }
             break;
         }
@@ -130,17 +134,25 @@ function handleSignalingMessage(senderId: string, msg: any) {
             const { roomName } = payload;
             const session = sessions.get(roomName);
 
-            if (session) {
-                session.state = 'rejected';
-                const targetConn = clients.get(session.callerId);
-                if (targetConn && targetConn.readyState === WebSocket.OPEN) {
-                    targetConn.send(JSON.stringify({
-                        type: 'CALL_REJECTED',
-                        payload: { roomName }
-                    }));
-                }
-                sessions.delete(roomName);
+            console.log(`Processing CALL_REJECTED request for Room identifier: "${roomName}"`);
+
+
+            if (!session) {
+                console.warn(`backend map could not find an active session matching room key: "${roomName}"`);
+                console.log("Current active keys in session map:", Array.from(sessions.keys()));
+                break;
             }
+
+            session.state = 'rejected';
+            const targetConn = clients.get(String(session.callerId));
+            if (targetConn && targetConn.readyState === WebSocket.OPEN) {
+                targetConn.send(JSON.stringify({
+                    type: 'CALL_REJECTED',
+                    payload: { roomName }
+                }));
+            }
+            sessions.delete(roomName);
+
             break;
         }
 
@@ -149,7 +161,8 @@ function handleSignalingMessage(senderId: string, msg: any) {
             const session = sessions.get(roomName);
 
             if (session) {
-                const targetConn = clients.get(session.calleeId);
+                session.state = 'cancelled'
+                const targetConn = clients.get(String(session.calleeId));
                 if (targetConn && targetConn.readyState === WebSocket.OPEN) {
                     targetConn.send(JSON.stringify({ type: 'CALL_CANCELLED', payload: { roomName } }));
                 }
