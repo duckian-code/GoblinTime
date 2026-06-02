@@ -3,7 +3,7 @@ import http from 'http';
 import WebSocket, { WebSocketServer } from 'ws';
 import url from 'url';
 
-type CallState = 'ringing' | 'accepted' | 'ended' | 'rejected';
+type CallState = 'ringing' | 'accepted' | 'ended' | 'rejected' | 'cancelled';
 
 interface CallSession {
     roomName: string;
@@ -149,6 +149,7 @@ function handleSignalingMessage(senderId: string, msg: any) {
             const session = sessions.get(roomName);
 
             if (session) {
+                session.state = 'cancelled'
                 const targetConn = clients.get(session.calleeId);
                 if (targetConn && targetConn.readyState === WebSocket.OPEN) {
                     targetConn.send(JSON.stringify({ type: 'CALL_CANCELLED', payload: { roomName } }));

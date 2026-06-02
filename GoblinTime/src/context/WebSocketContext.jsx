@@ -42,17 +42,23 @@ export const WebSocketProvider = ({ children }) => {
     const handleIncomingMessage = (data) => {
         const { type, payload } = data;
         switch (type) {
-            case 'ringing':
+            case 'CALL_INVITE':
                 setIncomingCall(payload);
                 setCallState('ringing');
                 break;
-            case 'accepted':
+            case 'CALL_ACCEPTED':
                 setCallState("accepted");
                 // TODO: TRIGGER JOIN LOGIC FOR LIVEKIT
                 break;
-            case 'rejected':
-            case 'cancelled': // TODO: add cancelled state to signaling service
-            case 'ended':
+            case 'CALL_REJECTED':
+                setIncomingCall(null);
+                setCallState("idle");
+                break;
+            case 'CALL_CANCELLED':
+                setIncomingCall(null);
+                setCallState("idle");
+                break;
+            case 'CALL_ENDED':
                 setIncomingCall(null);
                 setCallState("idle");
                 break;
