@@ -1,14 +1,19 @@
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import { Room } from "livekit-client";
 import { useCallContext } from "../context/CallContext.jsx";
+import ContactList from "../components/ContactList.jsx";
 import ToastNotification from "../components/ToastNotification.jsx";
 import OutgoingCall from "../components/OutgoingCall.jsx";
 import IncomingCall from "../components/IncomingCall.jsx";
 import { useWebSocket } from "../context/WebSocketContext.jsx";
-import { useEffect } from "react";
 import { LiveKitRoom, VideoConference } from "@livekit/components-react";
 import "@livekit/components-styles"; // Required for VideoConference UI
-import { buildUrl } from "../utils/urlHelper.js";
+import {
+    addContact,
+    fetchContacts,
+    fetchProfile,
+    fetchRecommendedContacts,
+} from "../utils/contactApi.js";
 
 function MediaPage() {
     const room = new Room();
@@ -54,11 +59,8 @@ function MediaPage() {
     const [toastMessage, setToastMessage] = useState("");
     const [showToast, setShowToast] = useState(false);
 
-    const contacts = [
-        {username: "Anonymous Goblin", uuid: "1234567890"},
-        // "Less Anonymous Goblin",acks, setLocalTracks] = useState([]);
-        // "Super Anonymous Goblin"
-    ];
+    const [contacts, setContacts] = useState([]);
+    const [recommended, setRecommended] = useState([]);
 
     const simulateIncomingCall = (name) => {
         setCaller(name);
@@ -67,49 +69,11 @@ function MediaPage() {
 
     const [error, setError] = useState(null);
 
-    const getCookie = (name) => {
-        const cookie = document.cookie
-            .split("; ")
-            .find((row) => row.startsWith(`${name}=`));
-
-        return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
-    };
-
-    const recommended = [
-        "Gilbert",
-        // "Godfrey",
-        // "Gillard"
-    ];
-
     const getUserData = async() => {
         setError(null);
 
-        const token = getCookie("token");
-
-        if (!token) {
-            setError("Unable to load profile: JWT cookie was not found.");
-            return;
-        }
-
-        const endpoint = window.__ENV__?.VITE_USER_ENDPOINT || ""
-
         try {
-            const response = await fetch(endpoint, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error(`User Service responded with status: ${response.status}`);
-            }
-
-            const data = await response.json();
-
-            console.log("User Service successful GET: ", data);
-
+            const data = await fetchProfile();
             setError(null);
             return data;
         } catch (err) {
@@ -133,8 +97,8 @@ function MediaPage() {
             return;
         }
 
-        const currentId = data.uuid;
-        const targetId = contact.uuid;
+        const currentId = data.uuid ?? data.id;
+        const targetId = contact.uuid ?? contact.id;
         roomName.current = `room-${currentId}-${targetId}`;
 
         initiateCall(targetId, roomName.current, currentId, data.username);
@@ -155,148 +119,81 @@ function MediaPage() {
         }
     };
 
-    const handleAddFriendClick = async (userName) => {
-        const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT; // Replace with your actual endpoint
-        const token = getCookie("token");
+    const handleAddFriendClick = async (contact) => {
+        const username = contact.username;
+        setError(null);
 
         try {
-            // --- POST REQUEST SPACE ---
+            await addContact(username);
+            await loadContacts();
+            await loadRecommendedContacts();
 
-            const response = await fetch(targetUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({ friend_username: userName }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to add friend");
-            }
-
-            // Simulate successful POST request
-            console.log(`Successfully sent friend request to ${userName}`);
-
-            // Trigger Toast Notification
-            setToastMessage(`${userName} Added as Contact`);
+            setToastMessage(`${username} Added as Contact`);
             setShowToast(true);
 
-            // Hide toast after 3 seconds
             setTimeout(() => {
                 setShowToast(false);
             }, 3000);
 
         } catch (err) {
             console.error("Error adding friend: ", err);
-            setError("Could not add user. Please try again.");
+            setError(err.message || "Could not add user. Please try again.");
         }
     };
 
-    const fetchContacts = async(event) => {
+    const loadContacts = async() => {
         setError(null);
-        // TODO: contacts endpoint
-
-        const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT || ""
-        const token = getCookie("token");
 
         try {
-            const response = await fetch(endpoint, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error(`User Service responded with status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log("User Service successful GET: ", data);
-
-            return data;
-
+            setContacts(await fetchContacts());
         } catch (err) {
-            console.error("Auth Error: ", err);
-            setError(err.message || "An error occurred during authentication. Please try again.");
+            console.error("Contacts Error: ", err);
+            setError(err.message || "An error occurred while loading contacts. Please try again.");
         }
-    }
+    };
+
+    const loadRecommendedContacts = async() => {
+        setError(null);
+        try {
+            setRecommended(await fetchRecommendedContacts());
+        } catch (err) {
+            console.error("Recommendations Error: ", err);
+            setError(err.message || "An error occurred while loading recommendations. Please try again.");
+        }
+    };
 
     const createRoom = async(event) => {
         setError(null);
         const serviceUrl = window.__ENV__?.VITE_LIVEKIT_SERVICE_URL || "";
     }
 
-    const fetchRecommended = async(event) => {
-        setError(null);
-
-        const endpoint = window.__ENV__?.VITE_RECOMMENDED_ENDPOINT || ""
-        const token = getCookie("token");
-
-        try {
-            const response = await fetch(endpoint, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error(`User Service Recommended responded with status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log("User Service successful GET: ", data);
-
-            return data;
-
-        } catch (err) {
-            console.error("Auth Error: ", err);
-            setError(err.message || "An error occurred during authentication. Please try again.");
-        }
-    }
-
-    void fetchContacts;
-    void fetchRecommended;
+    useEffect(() => {
+        loadContacts();
+        loadRecommendedContacts();
+    }, []);
 
     return (
         <div className="media-layout">
             <aside className="sidebar">
                 <button onClick={() => simulateIncomingCall("John Goblin")}>Demo Incoming Call</button>
 
-                <section>
-                    {error && <p className="profile-error" style={{ color: "red"}}>{error}</p>}
-                    <h3>Contacts</h3>
-                    <ul style={{ listStyleType: 'none', padding: 0 }}>
-                        {contacts.map((contact) => (
-                            <li
-                                key={contact.uuid} // Use the UUID as the React key
-                                className="clickable-list-item"
-                                onClick={() => handleContactClick(contact)}
-                            >
-                                - {contact.username}
-                            </li>
-                        ))}
-                    </ul>
-                </section>
+                {error && <p className="profile-error" style={{ color: "red"}}>{error}</p>}
 
-                <section>
-                    <h3>Recommended</h3>
-                    <ul style={{ listStyleType: 'none', padding: 0 }}>
-                        {recommended.map((item, index) => (
-                            <li
-                                key={index}
-                                className="clickable-list-item"
-                                onClick={() => handleAddFriendClick(item)}
-                            >
-                                + {item}
-                            </li>
-                        ))}
-                    </ul>
-                </section>
+                <ContactList
+                    title="Contacts"
+                    contacts={contacts}
+                    emptyMessage="No contacts yet."
+                    actionLabel="-"
+                    onContactClick={handleContactClick}
+                />
+
+                <ContactList
+                    title="Recommended"
+                    contacts={recommended}
+                    emptyMessage="No recommendations yet."
+                    actionLabel="+"
+                    onContactClick={handleAddFriendClick}
+                />
             </aside>
 
             <section className="media-content">
