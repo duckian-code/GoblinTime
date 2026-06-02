@@ -58,6 +58,7 @@ services:
       - "8090:8090"
     environment:
       USER_SERVICE_URL: http://goblin-ledger:8088
+      USER_ENDPOINT: user/profile
     depends_on:
       - goblin-ledger
   #  profiles:
@@ -74,10 +75,10 @@ services:
       VITE_USER_SERVICE_URL: http://localhost:8088
       VITE_AUTH_SERVICE_URL: http://localhost:8089
       VITE_LIVEKIT_URL: ws://localhost:7880 # will not work - don't sweat it rn
-
+      VITE_WS_URL: ws://localhost:8090
       VITE_USER_ENDPOINT: /user/profile
       VITE_CONTACTS_ENDPOINT: /user/contacts
-      VITE_FRIEND_ENDPOINT: /user/contacts/recommendations
+      VITE_RECOMMENDED_ENDPOINT: /user/contacts/recommendations
 
       VITE_REGISTER_ENDPOINT: /user/register
       VITE_LOGIN_ENDPOINT: /user/login

@@ -22,7 +22,7 @@ export const WebSocketProvider = ({ children }) => {
         if (!token || wsRef.current) return; {} // prevent duplicate or invalid
 
         const wsUrl = window.__ENV__?.VITE_WS_URL || "";
-        const ws = new WebSocket(`${wsUrl}/ws/token=${token}`);
+        const ws = new WebSocket(`${wsUrl}/ws?token=${token}`);
 
         ws.onopen = () => console.log("WebSocket connection established");
 
@@ -41,18 +41,34 @@ export const WebSocketProvider = ({ children }) => {
 
     const handleIncomingMessage = (data) => {
         const { type, payload } = data;
+        console.log("WS MESSAGE RECEIVED FROM SERVER -> Type:", type, "Payload:", payload);
         switch (type) {
-            case 'ringing':
-                setIncomingCall(payload);
+            case 'CALL_INVITE':
+                console.log("Checking payload properties before setting state:", {
+                    roomName: payload?.roomName,
+                    callerId: payload?.callerId,
+                    callerName: payload?.callerName
+                });
+                setIncomingCall({
+                    roomName: payload.roomName,
+                    callerId: payload.callerId,
+                    callerName: payload.callerName
+                });
                 setCallState('ringing');
                 break;
-            case 'accepted':
+            case 'CALL_ACCEPTED':
                 setCallState("accepted");
                 // TODO: TRIGGER JOIN LOGIC FOR LIVEKIT
                 break;
-            case 'rejected':
-            case 'cancelled': // TODO: add cancelled state to signaling service
-            case 'ended':
+            case 'CALL_REJECTED':
+                setIncomingCall(null);
+                setCallState("idle");
+                break;
+            case 'CALL_CANCELLED':
+                setIncomingCall(null);
+                setCallState("idle");
+                break;
+            case 'CALL_ENDED':
                 setIncomingCall(null);
                 setCallState("idle");
                 break;
@@ -70,7 +86,16 @@ export const WebSocketProvider = ({ children }) => {
     // TODO: update call states here with proper states
 
     const initiateCall = (calleeId, roomName, callerId, callerName) => {
-        sendSignalingMessage("CALL_INVITE", { calleeId, roomName, callerId, callerName });
+
+        const payload = {
+            calleeId: calleeId,
+            callerId: callerId,
+            callerName: callerName,
+            roomName: roomName
+        };
+
+        console.log("INITIATE CALL TRIGGERED:", payload);
+        sendSignalingMessage("CALL_INVITE", payload);
         setCallState("ringing");
     }
 
@@ -82,10 +107,17 @@ export const WebSocketProvider = ({ children }) => {
     }
 
     const rejectCall = () => {
+        console.log("DECLINE BUTTON CLICKED. Current incomingCall state is:", incomingCall)
         if(incomingCall) {
-            sendSignalingMessage("CALL_REJECTED", { roomName: incomingCall.roomName });
+            const targetRoom = incomingCall.roomName;
+
+            console.log("Sending CALL_REJECTED for room:", targetRoom);
+
+            sendSignalingMessage("CALL_REJECTED", { roomName: targetRoom });
             setCallState("idle");
             setIncomingCall(null);
+        }else {
+            console.warn(" rejectCall ran, but incomingCall state was completely null/empty!");
         }
     }
 
