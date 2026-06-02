@@ -70,7 +70,7 @@ function MediaPage() {
 
     const [error, setError] = useState(null);
 
-<<<<<<< HEAD
+
     const getCookie = (name) => {
         const cookie = document.cookie
             .split("; ")
@@ -81,8 +81,6 @@ function MediaPage() {
 
 
 
-=======
->>>>>>> parent of 6b8d04e (Revert "fix: frontend edits")
     const getUserData = async() => {
         setError(null);
 
@@ -111,13 +109,10 @@ function MediaPage() {
             return;
         }
 
-<<<<<<< HEAD
-        const currentId = data.ID;
-        const targetId = contact.uuid;
-=======
-        const currentId = data.uuid ?? data.id;
-        const targetId = contact.uuid ?? contact.id;
->>>>>>> parent of 6b8d04e (Revert "fix: frontend edits")
+
+
+        const currentId = data.ID ?? data.id;
+        const targetId = contact.ID ?? contact.id;
         roomName.current = `room-${currentId}-${targetId}`;
 
         initiateCall(targetId, roomName.current, currentId, data.Username);
@@ -160,15 +155,12 @@ function MediaPage() {
         }
     };
 
-<<<<<<< HEAD
+
     const fetchContacts = async() => {
-=======
     const loadContacts = async() => {
->>>>>>> parent of 6b8d04e (Revert "fix: frontend edits")
         setError(null);
 
         try {
-<<<<<<< HEAD
             const response = await fetch(endpoint, {
                 method: "GET",
                 headers: {
@@ -186,9 +178,8 @@ function MediaPage() {
 
             setContacts(Array.isArray(data) ? data : []);
 
-=======
+
             setContacts(await fetchContacts());
->>>>>>> parent of 6b8d04e (Revert "fix: frontend edits")
         } catch (err) {
             console.error("Contacts Error: ", err);
             setError(err.message || "An error occurred while loading contacts. Please try again.");
@@ -210,7 +201,7 @@ function MediaPage() {
         const serviceUrl = window.__ENV__?.VITE_LIVEKIT_SERVICE_URL || "";
     }
 
-<<<<<<< HEAD
+
     const fetchRecommended = async() => {
         setError(null);
 
@@ -245,11 +236,10 @@ function MediaPage() {
         connectWs();
         fetchContacts();
         fetchRecommended();
-=======
+
     useEffect(() => {
         loadContacts();
         loadRecommendedContacts();
->>>>>>> parent of 6b8d04e (Revert "fix: frontend edits")
     }, []);
 
     return (
@@ -257,7 +247,7 @@ function MediaPage() {
             <aside className="sidebar">
                 <button onClick={() => simulateIncomingCall("John Goblin")}>Demo Incoming Call</button>
 
-<<<<<<< HEAD
+
                 <section>
                     {error && <p className="profile-error" style={{ color: "red"}}>{error}</p>}
                     <h3>Contacts</h3>
@@ -288,7 +278,7 @@ function MediaPage() {
                         ))}
                     </ul>
                 </section>
-=======
+
                 {error && <p className="profile-error" style={{ color: "red"}}>{error}</p>}
 
                 <ContactList
@@ -306,7 +296,7 @@ function MediaPage() {
                     actionLabel="+"
                     onContactClick={handleAddFriendClick}
                 />
->>>>>>> parent of 6b8d04e (Revert "fix: frontend edits")
+
             </aside>
 
             <section className="media-content">
@@ -367,6 +357,6 @@ function MediaPage() {
 
         </div>
     );
-}
+
 
 export default MediaPage;

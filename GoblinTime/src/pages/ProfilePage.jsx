@@ -87,13 +87,10 @@ function ProfilePage() {
     };
 
     useEffect(() => {
-<<<<<<< HEAD
-        profile();
         fetchContacts();
-=======
+
         loadProfile();
         loadContacts();
->>>>>>> parent of 6b8d04e (Revert "fix: frontend edits")
     }, []);
 
     return (

@@ -9,7 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/livekit/protocol/auth" // The LiveKit Go SDK package!
 )
 
@@ -19,8 +18,8 @@ type LoginRequest struct {
 }
 
 type VideoTokenRequest struct {
-	Room     string `json:"room"`
-	Identity string `json:"identity"`
+	Room     string `json:"roomName"`
+	Identity string `json:"username"`
 }
 
 func main() {
