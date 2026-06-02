@@ -23,6 +23,7 @@ function MediaPage() {
 
 // From WebSocket Context
     const {
+        connectWs,
         callState, incomingCall, initiateCall, cancelCall, acceptCall, rejectCall, endCall
     } = useWebSocket();
 
@@ -54,11 +55,8 @@ function MediaPage() {
     const [toastMessage, setToastMessage] = useState("");
     const [showToast, setShowToast] = useState(false);
 
-    const contacts = [
-        {username: "Anonymous Goblin", uuid: "1234567890"},
-        // "Less Anonymous Goblin",acks, setLocalTracks] = useState([]);
-        // "Super Anonymous Goblin"
-    ];
+    const [contacts, setContacts] = useState([]);
+    const [recommended, setRecommended] = useState([]);
 
     const simulateIncomingCall = (name) => {
         setCaller(name);
@@ -75,11 +73,7 @@ function MediaPage() {
         return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
     };
 
-    const recommended = [
-        "Gilbert",
-        // "Godfrey",
-        // "Gillard"
-    ];
+
 
     const getUserData = async() => {
         setError(null);
@@ -133,11 +127,11 @@ function MediaPage() {
             return;
         }
 
-        const currentId = data.uuid;
+        const currentId = data.ID;
         const targetId = contact.uuid;
         roomName.current = `room-${currentId}-${targetId}`;
 
-        initiateCall(targetId, roomName.current, currentId, data.username);
+        initiateCall(targetId, roomName.current, currentId, data.Username);
     };
 
     const handleCancelOutgoingCall = () => {
@@ -193,7 +187,7 @@ function MediaPage() {
         }
     };
 
-    const fetchContacts = async(event) => {
+    const fetchContacts = async() => {
         setError(null);
         // TODO: contacts endpoint
 
@@ -216,7 +210,7 @@ function MediaPage() {
             const data = await response.json();
             console.log("User Service successful GET: ", data);
 
-            return data;
+            setContacts(Array.isArray(data) ? data : []);
 
         } catch (err) {
             console.error("Auth Error: ", err);
@@ -229,7 +223,7 @@ function MediaPage() {
         const serviceUrl = window.__ENV__?.VITE_LIVEKIT_SERVICE_URL || "";
     }
 
-    const fetchRecommended = async(event) => {
+    const fetchRecommended = async() => {
         setError(null);
 
         const endpoint = window.__ENV__?.VITE_RECOMMENDED_ENDPOINT || ""
@@ -251,7 +245,7 @@ function MediaPage() {
             const data = await response.json();
             console.log("User Service successful GET: ", data);
 
-            return data;
+            setRecommended(Array.isArray(data) ? data : []);
 
         } catch (err) {
             console.error("Auth Error: ", err);
@@ -259,8 +253,11 @@ function MediaPage() {
         }
     }
 
-    void fetchContacts;
-    void fetchRecommended;
+    useEffect(() => {
+        connectWs();
+        fetchContacts();
+        fetchRecommended();
+    }, []);
 
     return (
         <div className="media-layout">
@@ -273,11 +270,11 @@ function MediaPage() {
                     <ul style={{ listStyleType: 'none', padding: 0 }}>
                         {contacts.map((contact) => (
                             <li
-                                key={contact.uuid} // Use the UUID as the React key
+                                key={contact.ID} // Use the UUID as the React key
                                 className="clickable-list-item"
-                                onClick={() => handleContactClick(contact)}
+                                onClick={() => handleContactClick({ username: contact.Username, uuid: contact.ID })}
                             >
-                                - {contact.username}
+                                - {contact.Username}
                             </li>
                         ))}
                     </ul>
@@ -286,13 +283,13 @@ function MediaPage() {
                 <section>
                     <h3>Recommended</h3>
                     <ul style={{ listStyleType: 'none', padding: 0 }}>
-                        {recommended.map((item, index) => (
+                        {recommended.map((item) => (
                             <li
-                                key={index}
+                                key={item.ID}
                                 className="clickable-list-item"
-                                onClick={() => handleAddFriendClick(item)}
+                                onClick={() => handleAddFriendClick(item.Username)}
                             >
-                                + {item}
+                                + {item.Username}
                             </li>
                         ))}
                     </ul>

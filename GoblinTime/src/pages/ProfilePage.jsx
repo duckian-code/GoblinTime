@@ -170,6 +170,7 @@ function ProfilePage() {
     // ADD TOKEN AS HEADER BEFORE SENDING TO ENDPOINT
     useEffect(() => {
         profile();
+        fetchContacts();
     }, []);
 
     void fetchContacts;
