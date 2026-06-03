@@ -88,9 +88,9 @@ function ProfilePage() {
 
     useEffect(() => {
         fetchContacts();
-
         loadProfile();
         loadContacts();
+
     }, []);
 
     return (

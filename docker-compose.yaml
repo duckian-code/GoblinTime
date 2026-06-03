@@ -41,6 +41,8 @@ services:
     ports:
       - "8089:8089"
     environment:
+      api_key: "devkey"
+      api_secret: "secret"
       USER_SERVICE_URL: http://goblin-ledger:8088
       DB_URL: host=postgres user=admin password=penguin dbname=GoblinTime port=5432 sslmode=disable
       JWT_SECRET: fe120c6ea821e63927344f13ab90b88423bb6f77c683811de1d9d2bedbbf2a7
@@ -74,7 +76,9 @@ services:
     environment:
       VITE_USER_SERVICE_URL: http://localhost:8088
       VITE_AUTH_SERVICE_URL: http://localhost:8089
-      VITE_LIVEKIT_URL: ws://localhost:7880 # will not work - don't sweat it rn
+      VITE_LIVEKIT_URL: wss://livekit.goblin-ti.me
+      #VITE_LIVEKIT_URL: ws://localhost:7880 # will not work - don't sweat it rn
+      VITE_LIVEKIT_ENDPOINT: https://goblin-ti.me
       VITE_WS_URL: ws://localhost:8090
       VITE_USER_ENDPOINT: /user/profile
       VITE_CONTACTS_ENDPOINT: /user/contacts

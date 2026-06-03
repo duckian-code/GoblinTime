@@ -15,6 +15,7 @@ window.__ENV__ = {
   VITE_USER_SERVICE_URL: "",
   VITE_AUTH_SERVICE_URL: "",
   VITE_LIVEKIT_SERVICE_URL: "$(escape_js "${VITE_LIVEKIT_SERVICE_URL}")",
+  VITE_LIVEKIT_ENDPOINT: "$(escape_js "${VITE_LIVEKIT_ENDPOINT}")",
   VITE_REGISTER_ENDPOINT: "$(escape_js "${VITE_REGISTER_ENDPOINT}")",
   VITE_LOGIN_ENDPOINT: "$(escape_js "${VITE_LOGIN_ENDPOINT}")",
   VITE_CONTACTS_ENDPOINT: "$(escape_js "${VITE_CONTACTS_ENDPOINT}")",
@@ -22,6 +23,7 @@ window.__ENV__ = {
   VITE_RECOMMENDED_ENDPOINT: "$(escape_js "${VITE_RECOMMENDED_ENDPOINT}")",
 };
 EOF
+
 
 # Inject a <script> tag into index.html so the SPA loads env-config.js before the app bundle
 HTML_FILE="/usr/share/nginx/html/index.html"
