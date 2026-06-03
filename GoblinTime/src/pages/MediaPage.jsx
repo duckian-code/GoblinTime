@@ -1,14 +1,19 @@
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import { Room } from "livekit-client";
 import { useCallContext } from "../context/CallContext.jsx";
+import ContactList from "../components/ContactList.jsx";
 import ToastNotification from "../components/ToastNotification.jsx";
 import OutgoingCall from "../components/OutgoingCall.jsx";
 import IncomingCall from "../components/IncomingCall.jsx";
 import { useWebSocket } from "../context/WebSocketContext.jsx";
-import { useEffect } from "react";
 import { LiveKitRoom, VideoConference } from "@livekit/components-react";
 import "@livekit/components-styles"; // Required for VideoConference UI
-import { buildUrl } from "../utils/urlHelper.js";
+import {
+    addContact,
+    fetchContacts,
+    fetchProfile,
+    fetchRecommendedContacts,
+} from "../utils/contactApi.js";
 
 function MediaPage() {
     const room = new Room();
@@ -22,6 +27,7 @@ function MediaPage() {
     } = useCallContext();
 
     // From WebSocket Context
+    // From WebSocket Context
     const {
         connectWs,
         callState, incomingCall, initiateCall, cancelCall, acceptCall, rejectCall, endCall
@@ -33,6 +39,7 @@ function MediaPage() {
             // If we are calling, and the state changes to accepted, and we aren't in a room yet
             if (isCalling && callState === 'accepted' && !lkRoom) {
                 const data = await getUserData();
+                await joinLiveKitRoom(roomName.current, data?.Username || data?.username);
                 await joinLiveKitRoom(roomName.current, data?.Username || data?.username);
             }
         };
@@ -116,6 +123,7 @@ function MediaPage() {
             setError(err.message || "An error occurred while loading the profile. Please try again.");
         }
     };
+    };
 
     const roomName = useRef("");
 
@@ -123,7 +131,10 @@ function MediaPage() {
     const handleContactClick = async (contact) => {
         const targetUsername = contact.Username || contact.username;
         setCallTarget(targetUsername);
+        const targetUsername = contact.Username || contact.username;
+        setCallTarget(targetUsername);
         setIsCalling(true);
+        console.log(`Initiating call to ${targetUsername}...`);
         console.log(`Initiating call to ${targetUsername}...`);
 
         const data = await getUserData();
@@ -133,14 +144,9 @@ function MediaPage() {
             return;
         }
 
-<<<<<<< Updated upstream
-        const currentId = data.ID;
-        const targetId = contact.uuid;
-=======
         const currentId = data.ID ?? data.id ?? data.uuid;
         const targetId = contact.ID ?? contact.uuid ?? contact.id;
 
->>>>>>> Stashed changes
         roomName.current = `room-${currentId}-${targetId}`;
 
         initiateCall(targetId, roomName.current, currentId, data.Username || data.username);
@@ -172,47 +178,26 @@ function MediaPage() {
 >>>>>>> Stashed changes
 
         try {
-            // --- POST REQUEST SPACE ---
+            await addContact(username);
+            await loadContacts();
+            await loadRecommendedContacts();
 
-            const response = await fetch(targetUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({ friend_username: userName }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to add friend");
-            }
-
-            // Simulate successful POST request
-            console.log(`Successfully sent friend request to ${userName}`);
-
-            // Trigger Toast Notification
-            setToastMessage(`${userName} Added as Contact`);
+            setToastMessage(`${username} Added as Contact`);
             setShowToast(true);
 
-            // Hide toast after 3 seconds
             setTimeout(() => {
                 setShowToast(false);
             }, 3000);
 
         } catch (err) {
             console.error("Error adding friend: ", err);
-            setError("Could not add user. Please try again.");
+            setError(err.message || "Could not add user. Please try again.");
         }
     };
 
 <<<<<<< Updated upstream
     const fetchContacts = async() => {
         setError(null);
-        // TODO: contacts endpoint
-
-        const endpoint = window.__ENV__?.VITE_CONTACTS_ENDPOINT || ""
-        const token = getCookie("token");
-
         try {
             const response = await fetch(endpoint, {
                 method: "GET",
@@ -235,23 +220,32 @@ function MediaPage() {
 >>>>>>> Stashed changes
             console.log("User Service successful GET: ", data);
             setContacts(Array.isArray(data) ? data : []);
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
         } catch (err) {
-            console.error("Auth Error: ", err);
-            setError(err.message || "An error occurred during authentication. Please try again.");
+            console.error("Contacts Error: ", err);
+            setError(err.message || "An error occurred while loading contacts. Please try again.");
         }
-    }
+    };
+
+    const loadRecommendedContacts = async() => {
+        setError(null);
+        try {
+            setRecommended(await fetchRecommendedContacts());
+        } catch (err) {
+            console.error("Recommendations Error: ", err);
+            setError(err.message || "An error occurred while loading recommendations. Please try again.");
+        }
+    };
 
     const createRoom = async(event) => {
         setError(null);
         const serviceUrl = window.__ENV__?.VITE_LIVEKIT_SERVICE_URL || "";
     };
+    };
 
     const fetchRecommended = async() => {
         setError(null);
+        const endpoint = window.__ENV__?.VITE_RECOMMENDED_ENDPOINT || "";
         const endpoint = window.__ENV__?.VITE_RECOMMENDED_ENDPOINT || "";
         const token = getCookie("token");
 
@@ -276,7 +270,9 @@ function MediaPage() {
             setError(err.message || "An error occurred during authentication. Please try again.");
         }
     };
+    };
 
+    // Corrected unclosed dual hook lifecycle scope
     // Corrected unclosed dual hook lifecycle scope
     useEffect(() => {
         connectWs();
@@ -300,6 +296,7 @@ function MediaPage() {
                     <ul style={{ listStyleType: 'none', padding: 0 }}>
                         {contacts.map((contact) => (
                             <li
+                                key={contact.ID}
                                 key={contact.ID}
                                 className="clickable-list-item"
                                 onClick={() => handleContactClick({ username: contact.Username, uuid: contact.ID })}
@@ -352,6 +349,7 @@ function MediaPage() {
                     <div style={{ height: '100%', width: '100%' }}>
                         <LiveKitRoom
                             room={lkRoom}
+                            room={lkRoom}
                             token={lkToken}
                             serverUrl={lkUrl}
                             data-lk-theme="default"
@@ -385,6 +383,8 @@ function MediaPage() {
                 onAccept={async () => {
                     acceptCall();
                     const data = await getUserData();
+                    await joinLiveKitRoom(incomingCall.roomName, data?.Username || data?.username);
+                    console.log(`Joining room: ${incomingCall.roomName}`);
                     await joinLiveKitRoom(incomingCall.roomName, data?.Username || data?.username);
                     console.log(`Joining room: ${incomingCall.roomName}`);
                 }}
