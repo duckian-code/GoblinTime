@@ -87,14 +87,10 @@ function ProfilePage() {
     };
 
     useEffect(() => {
-<<<<<<< Updated upstream
-        profile();
-        fetchContacts();
-=======
         fetchContacts();
         loadProfile();
         loadContacts();
->>>>>>> Stashed changes
+
     }, []);
 
     return (

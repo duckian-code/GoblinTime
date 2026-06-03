@@ -90,7 +90,7 @@ func main() {
 	multiplexer.HandleFunc("DELETE /user/profile", EndpointCatcher(deleteGoblin))
 	multiplexer.HandleFunc("GET /user/contacts", EndpointCatcher(getContacts))
 	multiplexer.HandleFunc("POST /user/contacts", EndpointCatcher(addContact))
-	multiplexer.HandleFunc("GET /user/contacts/recommendation", EndpointCatcher(GetContactRecommendations))
+	multiplexer.HandleFunc("GET /user/contacts/recommendations", EndpointCatcher(GetContactRecommendations))
 
 	slog.Info("Listening on port 8088", "port", 8088)
 	log.Fatal(http.ListenAndServe(":8088", multiplexer))
@@ -259,18 +259,33 @@ func GetContactRecommendations(w http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get("X-User-ID")
 	var recommendations []GrabbedGoblin
 
-	outcome := db.Model(&Goblin{}).Select("DISTINCT goblins.id, goblins.username, goblins.clan").
-		Joins("INNER JOIN contacts AS friends_of_friends ON friends_of_friends.friend_id = goblins.id").
-		Joins("INNER JOIN contacts AS my_friends ON my_friends.friend_id = friends_of_friends.goblin_id").
-		Where("my_friends.goblin_id = ?", userID).
-		Where("goblins.id != ?", userID).
-		Where("goblins.id NOT IN (SELECT friend_id FROM contacts WHERE goblin_id = ?)", userID).
-		Find(&recommendations)
+	// Force GORM to skip its internal statement cache using an uncached DB session container clone
+	uncachedDB := db.Session(&gorm.Session{NewDB: true})
+
+	rawQuery := `
+		SELECT g.id AS id, g.username AS username, g.clan AS clan
+		FROM goblins g
+		WHERE g.id IN (
+			SELECT friend_id FROM contacts WHERE goblin_id IN (
+				SELECT friend_id FROM contacts WHERE goblin_id = ?
+			)
+		)
+		AND g.id != ?
+		AND g.id NOT IN (
+			SELECT friend_id FROM contacts WHERE goblin_id = ?
+		)
+	`
+
+	outcome := uncachedDB.Raw(rawQuery, userID, userID, userID).Scan(&recommendations)
 
 	if outcome.Error != nil {
 		slog.Error("Failed execution on network recommendations query", "userID", userID, "error", outcome.Error)
 		http.Error(w, "The Goblin network is tangled", http.StatusInternalServerError)
 		return
+	}
+
+	if recommendations == nil {
+		recommendations = []GrabbedGoblin{}
 	}
 
 	json.NewEncoder(w).Encode(recommendations)

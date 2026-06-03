@@ -33,17 +33,23 @@ export const CallProvider = ({ children }) => {
     };
 
     const joinLiveKitRoom = useCallback(async (roomName, username) => {
-        const endpoint = window.__ENV__?.VITE_LIVEKIT_ENDPOINT || '';
+
         const token = getCookie('token');
 
+        const targetUrl = `/video/token`
+        console.log(`Shipping request to LiveKit token generator: ${targetUrl}`);
+
         try {
-            const response = await fetch(`${endpoint}/token`, {
+            const response = await fetch(targetUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ roomName, username }),
+                body: JSON.stringify({
+                    roomName: roomName,
+                    username: username
+                }),
             });
 
             if (!response.ok) {
@@ -51,19 +57,21 @@ export const CallProvider = ({ children }) => {
             }
 
             const data = await response.json();
+            const liveKitToken = data.video_token;
 
+            const liveKitUrl = "wss://livekit.goblin-ti.me";
             const room = new Room();
             roomRef.current = room;
             roomNameRef.current = roomName;
 
-            console.log(`Connecting room instance to LiveKit: ${data.url}`);
-            await room.connect(data.url, data.token);
+            console.log(`Connecting room instance to LiveKit: ${liveKitUrl}`);
+            await room.connect(liveKitUrl, liveKitToken);
 
             await room.localParticipant.enableCameraAndMicrophone();
             console.log("Local camera and microphone tracks successfully published.");
 
-            setLkToken(data.token);
-            setLkUrl(data.url);
+            setLkToken(liveKitToken);
+            setLkUrl(liveKitUrl);
             setLkRoom(room);
         } catch (err) {
             console.error('Failed to join LiveKit room:', err);
