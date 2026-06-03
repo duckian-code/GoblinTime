@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/livekit/protocol/auth" // The LiveKit Go SDK package!
 )
 
