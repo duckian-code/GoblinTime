@@ -56,6 +56,12 @@ export const CallProvider = ({ children }) => {
             roomRef.current = room;
             roomNameRef.current = roomName;
 
+            console.log(`Connecting room instance to LiveKit: ${data.url}`);
+            await room.connect(data.url, data.token);
+
+            await room.localParticipant.enableCameraAndMicrophone();
+            console.log("Local camera and microphone tracks successfully published.");
+
             setLkToken(data.token);
             setLkUrl(data.url);
             setLkRoom(room);

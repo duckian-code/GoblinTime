@@ -23,6 +23,7 @@ window.__ENV__ = {
 };
 EOF
 
+
 # Inject a <script> tag into index.html so the SPA loads env-config.js before the app bundle
 HTML_FILE="/usr/share/nginx/html/index.html"
 if grep -q 'env-config.js' "$HTML_FILE"; then

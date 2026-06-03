@@ -169,8 +169,14 @@ function ProfilePage() {
 
     // ADD TOKEN AS HEADER BEFORE SENDING TO ENDPOINT
     useEffect(() => {
+<<<<<<< Updated upstream
         profile();
         fetchContacts();
+=======
+        fetchContacts();
+        loadProfile();
+        loadContacts();
+>>>>>>> Stashed changes
     }, []);
 
     void fetchContacts;
