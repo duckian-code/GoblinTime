@@ -29,7 +29,7 @@ func main() {
 		log.Fatal("JWT_SECRET environment variable is required.")
 	}
 
-	if os.Getenv("LIVEKIT_API_KEY") == "" || os.Getenv("LIVEKIT_API_SECRET") == "" {
+	if os.Getenv("api_key") == "" || os.Getenv("api_secret") == "" {
 		fmt.Println("Warning: api_key or api_secret is missing.")
 	}
 
